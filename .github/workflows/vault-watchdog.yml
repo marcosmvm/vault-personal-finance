@@ -1,8 +1,8 @@
-name: VAULT Watchdog — Daily Alerts
+name: VAULT Morning Briefing — Daily
 
 on:
   schedule:
-    - cron: '0 16 * * *'  # 9 AM PT (UTC-7)
+    - cron: '0 14 * * *'  # 7 AM PT (UTC-7)
   workflow_dispatch: {}
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run watchdog agent
+      - name: Run morning briefing
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
