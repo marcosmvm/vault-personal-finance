@@ -44,6 +44,15 @@ PERSONAL (NOT deductible — per CPA Courtney Matthews):
 - Gym memberships (Gold's Gym, EOS) — personal
 - Clothing, entertainment, personal travel
 
+ACCOUNT MAPPING (use these exact account names):
+- Anthropic, Supabase, GoDaddy, Canva, Cloudflare, Google, Vercel, n8n, Replit, Figma, Adobe, Zoom, Notion, Perplexity, xAI, Wix, Squarespace → "BofA Gray Card"
+- Instantly, Upwork, LinkedIn Premium, Tailwind UI, Beautiful.ai, Mobbin, Windsurf, Lovable, 21st.dev → "BofA Red Card"
+- Toyota, Verizon, AAA Insurance, Zelle income, Venmo income, Chaminade payroll → "BofA Adv Plus Banking"
+- Apple subscriptions, Apple.com/bill → "Apple Card"
+- Stripe deposits → "BofA Advantage Savings"
+- Mercury charges → "Mercury Credit Card"
+- If truly unknown, use "unknown" but try to match the vendor first
+
 RULES:
 - ALL SaaS/digital subscriptions = wryko_expense unless explicitly personal (Xbox, Spotify, Discord)
 - Venmo/Zelle >= $40 from a person = business_income_coaching
