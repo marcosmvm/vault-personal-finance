@@ -766,6 +766,15 @@
         </div>
         <div class="filter-bar">
           <input type="text" class="filter-input" id="filter-all" placeholder="Search vendor, description, category, amount..." data-target="all-transactions">
+          <select class="filter-select" id="filter-all-date">
+            <option value="week">This Week</option>
+            <option value="month">This Month</option>
+            <option value="quarter">This Quarter</option>
+            <option value="all">All Year</option>
+            <option value="custom">Custom Range</option>
+          </select>
+          <input type="date" class="filter-select" id="filter-all-from" style="display:none" title="From date">
+          <input type="date" class="filter-select" id="filter-all-to" style="display:none" title="To date">
           <select class="filter-select" id="filter-all-entity">
             <option value="">All Entities</option>
             <option value="wryko">Wryko</option>
@@ -778,6 +787,13 @@
             <option value="expense">Expense</option>
             <option value="bill">Bill</option>
             <option value="transfer">Transfer</option>
+          </select>
+          <select class="filter-select" id="filter-all-sort">
+            <option value="date-desc">Newest First</option>
+            <option value="date-asc">Oldest First</option>
+            <option value="amount-desc">Highest Amount</option>
+            <option value="amount-asc">Lowest Amount</option>
+            <option value="vendor-asc">Vendor A-Z</option>
           </select>
           <span class="filter-count" id="filter-all-count"></span>
         </div>
@@ -1398,63 +1414,141 @@ async function loadDashboard() {
 function initFilters() {
   const txnData = window._vaultTxns;
 
-  // Simple entity filters (Wryko, Coaching, Personal)
+  // Entity filters (Wryko, Coaching, Personal) with date + search
   ["wryko", "coaching", "personal"].forEach(entity => {
     const input = document.getElementById(`filter-${entity}`);
     if (!input) return;
     input.value = "";
     const countEl = document.getElementById(`filter-${entity}-count`);
     const tbody = document.getElementById(`${entity}-transactions`);
+    const entityTxns = txnData[entity] || [];
 
-    input.addEventListener("input", () => {
+    function applyFilter() {
       const q = input.value.toLowerCase().trim();
       const rows = tbody.querySelectorAll("tr");
       let shown = 0;
-      rows.forEach(row => {
+      rows.forEach((row, i) => {
         const text = row.textContent.toLowerCase();
         const match = !q || text.includes(q);
         row.style.display = match ? "" : "none";
         if (match) shown++;
       });
-      countEl.textContent = q ? `${shown} of ${rows.length}` : "";
-    });
+      countEl.textContent = q ? `${shown} of ${rows.length}` : `${rows.length} transactions`;
+    }
+    input.addEventListener("input", applyFilter);
+    applyFilter();
   });
 
-  // All Transactions filter (search + entity + type dropdowns)
+  // All Transactions filter (search + date range + entity + type + sort)
   const allInput = document.getElementById("filter-all");
+  const dateSelect = document.getElementById("filter-all-date");
+  const fromInput = document.getElementById("filter-all-from");
+  const toInput = document.getElementById("filter-all-to");
   const entitySelect = document.getElementById("filter-all-entity");
   const typeSelect = document.getElementById("filter-all-type");
+  const sortSelect = document.getElementById("filter-all-sort");
   const allCount = document.getElementById("filter-all-count");
   const allTbody = document.getElementById("all-transactions");
 
   if (allInput) allInput.value = "";
   if (entitySelect) entitySelect.value = "";
   if (typeSelect) typeSelect.value = "";
+  if (dateSelect) dateSelect.value = "week";
+  if (sortSelect) sortSelect.value = "date-desc";
+
+  // Show/hide custom date inputs
+  if (dateSelect) dateSelect.addEventListener("change", () => {
+    const isCustom = dateSelect.value === "custom";
+    fromInput.style.display = isCustom ? "" : "none";
+    toInput.style.display = isCustom ? "" : "none";
+    filterAllTransactions();
+  });
+
+  function getDateRange(preset) {
+    const today = new Date();
+    const yyyy = (d) => d.toISOString().slice(0, 10);
+    if (preset === "all") return { from: `${YEAR}-01-01`, to: `${YEAR}-12-31` };
+    if (preset === "custom") return { from: fromInput?.value || `${YEAR}-01-01`, to: toInput?.value || yyyy(today) };
+    if (preset === "month") {
+      const m = String(today.getMonth() + 1).padStart(2, "0");
+      return { from: `${today.getFullYear()}-${m}-01`, to: yyyy(today) };
+    }
+    if (preset === "quarter") {
+      const q = Math.floor(today.getMonth() / 3);
+      const qStart = new Date(today.getFullYear(), q * 3, 1);
+      return { from: yyyy(qStart), to: yyyy(today) };
+    }
+    // "week" — Monday to Sunday of current week
+    const day = today.getDay();
+    const mon = new Date(today);
+    mon.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+    const sun = new Date(mon);
+    sun.setDate(mon.getDate() + 6);
+    return { from: yyyy(mon), to: yyyy(sun) };
+  }
 
   function filterAllTransactions() {
     const q = (allInput?.value || "").toLowerCase().trim();
     const entityVal = entitySelect?.value || "";
     const typeVal = typeSelect?.value || "";
-    const rows = allTbody.querySelectorAll("tr");
-    let shown = 0;
+    const dateRange = getDateRange(dateSelect?.value || "week");
+    const sortVal = sortSelect?.value || "date-desc";
     const data = txnData.all;
 
-    rows.forEach((row, i) => {
-      const t = data[i];
-      if (!t) { row.style.display = "none"; return; }
+    // Build filtered + sorted index
+    let filtered = data.map((t, i) => ({ t, i })).filter(({ t }) => {
+      if (!t) return false;
       const textMatch = !q || [t.date, t.vendor, t.description, t.tax_category, t.account, String(t.amount)].join(" ").toLowerCase().includes(q);
       const entityMatch = !entityVal || t.schedule_c_entity === entityVal;
       const typeMatch = !typeVal || t.type === typeVal;
-      const visible = textMatch && entityMatch && typeMatch;
-      row.style.display = visible ? "" : "none";
-      if (visible) shown++;
+      const dateMatch = (!t.date || (t.date >= dateRange.from && t.date <= dateRange.to));
+      return textMatch && entityMatch && typeMatch && dateMatch;
     });
-    allCount.textContent = (q || entityVal || typeVal) ? `${shown} of ${rows.length}` : "";
+
+    // Sort
+    filtered.sort((a, b) => {
+      if (sortVal === "date-desc") return (b.t.date || "").localeCompare(a.t.date || "");
+      if (sortVal === "date-asc") return (a.t.date || "").localeCompare(b.t.date || "");
+      if (sortVal === "amount-desc") return Math.abs(parseFloat(b.t.amount || 0)) - Math.abs(parseFloat(a.t.amount || 0));
+      if (sortVal === "amount-asc") return Math.abs(parseFloat(a.t.amount || 0)) - Math.abs(parseFloat(b.t.amount || 0));
+      if (sortVal === "vendor-asc") return (a.t.vendor || "").localeCompare(b.t.vendor || "");
+      return 0;
+    });
+
+    // Hide all rows, then show filtered in sorted order
+    const rows = allTbody.querySelectorAll("tr");
+    const visibleSet = new Set(filtered.map(f => f.i));
+    rows.forEach((row, i) => {
+      row.style.display = visibleSet.has(i) ? "" : "none";
+      row.style.order = "";
+    });
+
+    // Reorder visible rows by sort
+    if (sortVal !== "date-desc") {
+      // Re-render in sorted order
+      const fragment = document.createDocumentFragment();
+      filtered.forEach(({ i }) => { if (rows[i]) fragment.appendChild(rows[i]); });
+      // Add hidden rows back at end
+      rows.forEach((row, i) => { if (!visibleSet.has(i)) fragment.appendChild(row); });
+      allTbody.appendChild(fragment);
+    }
+
+    const total = data.length;
+    const shown = filtered.length;
+    const preset = dateSelect?.value || "week";
+    const presetLabel = { week: "This Week", month: "This Month", quarter: "This Quarter", all: "All Year", custom: "Custom" }[preset] || "";
+    allCount.textContent = `${shown} of ${total} — ${presetLabel}`;
   }
 
   if (allInput) allInput.addEventListener("input", filterAllTransactions);
   if (entitySelect) entitySelect.addEventListener("change", filterAllTransactions);
   if (typeSelect) typeSelect.addEventListener("change", filterAllTransactions);
+  if (sortSelect) sortSelect.addEventListener("change", filterAllTransactions);
+  if (fromInput) fromInput.addEventListener("change", filterAllTransactions);
+  if (toInput) toInput.addEventListener("change", filterAllTransactions);
+
+  // Apply default "This Week" filter on load
+  filterAllTransactions();
 }
 
 loadDashboard();
