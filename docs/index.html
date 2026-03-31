@@ -655,13 +655,13 @@ document.querySelectorAll(".tab").forEach(tab => {
 });
 
 const DEDUCTION_RATES = {
-  wryko_expense:           { rate: "100%",     label: "Wryko Business Expense",    display: "Wryko Expense" },
-  coaching_expense:        { rate: "100%",     label: "Coaching Business Expense",  display: "Coaching Expense" },
-  business_income_wryko:   { rate: "N/A",      label: "Wryko Revenue",             display: "Wryko Income" },
-  business_income_coaching:{ rate: "N/A",      label: "Coaching Revenue",           display: "Coaching Income" },
+  wryko_expense:           { rate: "100%",     label: "Wryko Business Expense",    display: "Wryko — Deductible" },
+  coaching_expense:        { rate: "100%",     label: "Coaching Business Expense",  display: "Coaching — Deductible" },
+  business_income_wryko:   { rate: "",         label: "Wryko Revenue",             display: "Wryko Income" },
+  business_income_coaching:{ rate: "",         label: "Coaching Revenue",           display: "Coaching Income" },
   home_office:             { rate: "Partial",  label: "Business Use Percentage",    display: "Home Office" },
   vehicle_mileage:         { rate: "$0.70/mi", label: "IRS Standard Mileage Rate",  display: "Vehicle / Mileage" },
-  personal:                { rate: "0%",       label: "Not Deductible",             display: "Personal" },
+  personal:                { rate: "",         label: "Not Deductible",             display: "Personal" },
   needs_review:            { rate: "TBD",      label: "Pending Classification",     display: "Needs Review" },
 };
 

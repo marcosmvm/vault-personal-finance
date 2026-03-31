@@ -33,9 +33,10 @@ workspace (Notion, GitHub, Zoom, Google Workspace),
 monitoring (Sentry, BetterUptime), and any other software/SaaS subscription.
 
 SCHEDULE C #2 — SOCCER COACHING (youth teams G2012, B2015 + private training)
-Income: ANY Venmo or Zelle payment >= $40 from a person (not a company) is coaching income.
-Sources: Ventura Football Club stipends, Simi Valley Soccer Club training fees, private sessions.
-Deductible expenses: training equipment, field rental (Next Soccer Park), coaching gear, sports apps.
+Income: ANY Venmo or Zelle payment >= $30 RECEIVED from a person (not a company) is coaching income.
+Zelle/Venmo SENT (outgoing) >= $30 to a person = coaching EXPENSE (paying refs/assistant coaches).
+Sources: Surf Soccer Club (Zelle or direct deposit), Simi Valley Soccer Club, private training sessions.
+Deductible expenses: training equipment, field rental (Next Soccer Park), coaching gear, sports apps, payments to refs/coaches.
 
 PERSONAL (NOT deductible — per CPA Courtney Matthews):
 - Xbox/Microsoft gaming, Quizlet, Spotify, Discord Nitro — all personal
@@ -55,9 +56,12 @@ ACCOUNT MAPPING (use these exact account names):
 
 RULES:
 - ALL SaaS/digital subscriptions = wryko_expense unless explicitly personal (Xbox, Spotify, Discord)
-- Venmo/Zelle >= $40 from a person = business_income_coaching
-- Venmo/Zelle < $40 = personal (likely Starbucks or splitting food)
-- Stripe deposits = business_income_wryko
+- Venmo/Zelle >= $30 RECEIVED from a person = business_income_coaching
+- Venmo/Zelle >= $30 SENT to a person = coaching_expense (paying refs/coaches)
+- Venmo/Zelle < $30 = personal (Starbucks, splitting food)
+- Stripe deposits = business_income_wryko (Wryko income is very small — ~$100 total)
+- Upwork payments received = personal income, NOT Wryko
+- Surf Soccer Club payments = business_income_coaching
 - If unsure, choose needs_review — never guess
 - Always include a tax_note explaining your reasoning
 
