@@ -613,6 +613,9 @@ const yearBtns = document.querySelectorAll(".year-btn");
 function setActiveYear(y) {
   YEAR = y;
   yearBtns.forEach(b => b.classList.toggle("active", parseInt(b.dataset.year) === y));
+  const url = new URL(window.location);
+  url.searchParams.set("year", y);
+  window.history.pushState({}, "", url);
   loadDashboard();
 }
 yearBtns.forEach(b => b.addEventListener("click", () => setActiveYear(parseInt(b.dataset.year))));
@@ -701,17 +704,30 @@ function emptyRow(cols, msg) {
 }
 
 async function loadDashboard() {
+  console.log("[VAULT] Loading dashboard for year:", YEAR);
   document.getElementById("txn-year").textContent = YEAR;
   document.getElementById("last-updated").textContent = new Date().toLocaleString();
 
-  // Fetch all data in parallel — FIXED: pass target_year to vault_ytd_tax_ledger
-  const [wrykoTotals, coachingTotals, taxLedger, transactions, accounts] = await Promise.all([
-    rpc("vault_schedule_c_wryko", { target_year: YEAR }),
-    rpc("vault_schedule_c_coaching", { target_year: YEAR }),
-    rpc("vault_ytd_tax_ledger", { target_year: YEAR }),
-    query("pf_transactions", `tax_year=eq.${YEAR}&order=date.desc`),
-    query("pf_accounts", "order=type,name"),
-  ]);
+  let wrykoTotals, coachingTotals, taxLedger, transactions, accounts;
+  try {
+    [wrykoTotals, coachingTotals, taxLedger, transactions, accounts] = await Promise.all([
+      rpc("vault_schedule_c_wryko", { target_year: YEAR }),
+      rpc("vault_schedule_c_coaching", { target_year: YEAR }),
+      rpc("vault_ytd_tax_ledger", { target_year: YEAR }),
+      query("pf_transactions", `tax_year=eq.${YEAR}&order=date.desc`),
+      query("pf_accounts", "order=type,name"),
+    ]);
+  } catch (err) {
+    console.error("[VAULT] Data fetch failed:", err);
+    document.querySelector(".content").innerHTML = `<div style="padding:60px;text-align:center;color:#ef4444"><strong>Error loading data</strong><br>${err.message}</div>`;
+    return;
+  }
+
+  console.log("[VAULT] wrykoTotals:", JSON.stringify(wrykoTotals));
+  console.log("[VAULT] coachingTotals:", JSON.stringify(coachingTotals));
+  console.log("[VAULT] taxLedger:", JSON.stringify(taxLedger));
+  console.log("[VAULT] transactions:", transactions?.length, "rows");
+  console.log("[VAULT] accounts:", accounts?.length, "rows");
 
   const w = Array.isArray(wrykoTotals) ? wrykoTotals[0] || {} : wrykoTotals || {};
   const c = Array.isArray(coachingTotals) ? coachingTotals[0] || {} : coachingTotals || {};

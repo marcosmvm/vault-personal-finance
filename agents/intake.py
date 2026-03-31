@@ -258,11 +258,11 @@ def store_subscription(data: dict) -> None:
         "name": name,
         "vendor": data.get("vendor"),
         "amount": float(data.get("amount", 0)),
-        "cycle": data.get("subscription_cycle"),
+        "billing_cycle": data.get("subscription_cycle"),
         "category": data.get("category"),
         "tax_category": data.get("tax_category"),
         "schedule_c_entity": data.get("schedule_c_entity"),
-        "last_seen": data.get("date"),
+        "last_charged": data.get("date"),
         "active": True,
     }
 
