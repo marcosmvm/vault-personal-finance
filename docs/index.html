@@ -674,10 +674,7 @@
           <input type="text" class="filter-input" id="filter-wryko" placeholder="Search vendor, description, amount..." data-target="wryko-transactions">
           <span class="filter-count" id="filter-wryko-count"></span>
         </div>
-        <table>
-          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
-          <tbody id="wryko-transactions"></tbody>
-        </table>
+        <div id="wryko-audit-trail"></div>
       </div>
     </div>
 
@@ -712,10 +709,7 @@
           <input type="text" class="filter-input" id="filter-coaching" placeholder="Search vendor, description, amount..." data-target="coaching-transactions">
           <span class="filter-count" id="filter-coaching-count"></span>
         </div>
-        <table>
-          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
-          <tbody id="coaching-transactions"></tbody>
-        </table>
+        <div id="coaching-audit-trail"></div>
       </div>
     </div>
 
@@ -729,7 +723,7 @@
         <div class="chart-card">
           <div class="chart-card-title">Personal Summary</div>
           <table>
-            <thead><tr><th>Category</th><th>Total Spent</th><th>Transactions</th></tr></thead>
+            <thead><tr><th>Category</th><th>Write-Off Rate</th><th>Gross Amount</th><th>Deductible Amount</th></tr></thead>
             <tbody id="personal-summary"></tbody>
           </table>
         </div>
@@ -750,10 +744,7 @@
           <input type="text" class="filter-input" id="filter-personal" placeholder="Search vendor, description, amount..." data-target="personal-transactions">
           <span class="filter-count" id="filter-personal-count"></span>
         </div>
-        <table>
-          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
-          <tbody id="personal-transactions"></tbody>
-        </table>
+        <div id="personal-audit-trail"></div>
       </div>
     </div>
 
@@ -1002,6 +993,74 @@ function renderGroupedExpenses(txns, el) {
   `).join("");
 }
 
+function renderAuditTrail(txns, el) {
+  const income = txns.filter(t => t.type === "income");
+  const expenses = txns.filter(t => t.type !== "income");
+  const incomeTotal = income.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+  const expenseTotal = expenses.reduce((s, t) => s + Math.abs(parseFloat(t.amount || 0)), 0);
+
+  function txnRows(rows) {
+    return rows.map(t =>
+      `<tr><td style="white-space:nowrap;font-variant-numeric:tabular-nums">${t.date || ""}</td>
+       <td style="font-weight:500">${t.vendor || ""}</td><td>${t.description || ""}</td>
+       <td>${accountLink(t.account)}</td>
+       <td class="${cls(t.type === 'income' ? t.amount : -t.amount)}">${t.type === "income" ? "" : "-"}${fmt(t.amount)}</td></tr>`
+    ).join("");
+  }
+
+  let html = "";
+  if (income.length) {
+    html += `<div class="category-group open" onclick="this.classList.toggle('open')">
+      <div class="category-group-header">
+        <div class="category-group-left">
+          <div class="category-group-icon" style="background:var(--emerald-100)">&#x2197;</div>
+          <div>
+            <div class="category-group-name">Income</div>
+            <div class="category-group-count">${income.length} transaction${income.length !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <div class="category-group-totals">
+          <div class="category-group-total">
+            <div class="category-group-total-label">Total Income</div>
+            <div class="category-group-total-value" style="color:var(--emerald-dark)">${fmt(incomeTotal)}</div>
+          </div>
+          <div class="category-group-arrow">&#x25BC;</div>
+        </div>
+      </div>
+      <div class="category-group-items">
+        <table><thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
+        <tbody>${txnRows(income)}</tbody></table>
+      </div>
+    </div>`;
+  }
+  if (expenses.length) {
+    html += `<div class="category-group" onclick="this.classList.toggle('open')">
+      <div class="category-group-header">
+        <div class="category-group-left">
+          <div class="category-group-icon" style="background:var(--rose-100)">&#x2198;</div>
+          <div>
+            <div class="category-group-name">Expenses</div>
+            <div class="category-group-count">${expenses.length} transaction${expenses.length !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <div class="category-group-totals">
+          <div class="category-group-total">
+            <div class="category-group-total-label">Total Expenses</div>
+            <div class="category-group-total-value" style="color:var(--rose)">${fmt(expenseTotal)}</div>
+          </div>
+          <div class="category-group-arrow">&#x25BC;</div>
+        </div>
+      </div>
+      <div class="category-group-items">
+        <table><thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
+        <tbody>${txnRows(expenses)}</tbody></table>
+      </div>
+    </div>`;
+  }
+  if (!html) html = `<div class="empty-state"><div class="empty-state-icon">&#x1F4AD;</div><div class="empty-state-title">No transactions yet</div></div>`;
+  el.innerHTML = html;
+}
+
 // Chart instance management (destroy on reload to prevent memory leaks)
 const chartInstances = {};
 function makeChart(id, config) {
@@ -1044,31 +1103,34 @@ function renderDonutChart(canvasId, groups) {
   });
 }
 
-function renderOverviewBarChart(w, c, personalTotal) {
+function renderOverviewBarChart(w, c, personalIncome, personalExpenses) {
   const wInc = parseFloat(w.gross_receipts || 0);
   const wExp = parseFloat(w.total_expenses || 0);
+  const wNet = parseFloat(w.net_profit_loss || 0);
   const cInc = parseFloat(c.gross_receipts || 0);
   const cExp = parseFloat(c.total_expenses || 0);
+  const cNet = parseFloat(c.net_profit_loss || 0);
+  const pNet = personalIncome - personalExpenses;
   makeChart("chart-overview-bar", {
     type: "bar",
     data: {
-      labels: ["Wryko", "Coaching", "Personal"],
+      labels: ["Wryko LLC", "Coaching", "Personal"],
       datasets: [
-        { label: "Income", data: [wInc, cInc, 0], backgroundColor: "#34d399", borderRadius: 4 },
-        { label: "Expenses", data: [wExp, cExp, personalTotal], backgroundColor: "#fb7185", borderRadius: 4 },
+        { label: "Income", data: [wInc, cInc, personalIncome], backgroundColor: "#34d399", borderRadius: 6, barPercentage: 0.5, categoryPercentage: 0.6 },
+        { label: "Expenses", data: [wExp, cExp, personalExpenses], backgroundColor: "#fb7185", borderRadius: 6, barPercentage: 0.5, categoryPercentage: 0.6 },
+        { label: "Net", data: [wNet, cNet, pNet], backgroundColor: data => data.parsed.y >= 0 ? "rgba(52,211,153,0.3)" : "rgba(251,113,133,0.3)", borderColor: data => data.parsed.y >= 0 ? "#34d399" : "#fb7185", borderWidth: 2, borderRadius: 6, barPercentage: 0.5, categoryPercentage: 0.6, borderDash: [4, 4] },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: true,
-      indexAxis: "y",
       scales: {
-        x: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() } },
-        y: { grid: { display: false }, ticks: { font: { size: 12, weight: 600, family: "Inter" } } },
+        x: { grid: { display: false }, ticks: { font: { size: 12, weight: 600, family: "Inter" }, color: "#1e293b" } },
+        y: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() }, beginAtZero: true },
       },
       plugins: {
-        legend: { labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "Inter" } } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.x)}` } },
+        legend: { labels: { boxWidth: 12, padding: 16, font: { size: 11, family: "Inter" }, usePointStyle: true } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` } },
       },
     },
   });
@@ -1316,35 +1378,42 @@ async function loadDashboard() {
        <td class="${cls(t.type === 'income' ? t.amount : -t.amount)}">${t.type === "income" ? "" : "-"}${fmt(t.amount)}</td></tr>`
     ).join("");
   }
-  renderTxns(wrykoTxns, document.getElementById("wryko-transactions"));
-  renderTxns(coachingTxns, document.getElementById("coaching-transactions"));
+  renderAuditTrail(wrykoTxns, document.getElementById("wryko-audit-trail"));
+  renderAuditTrail(coachingTxns, document.getElementById("coaching-audit-trail"));
 
   // Personal transactions
   const personalTxns = txns.filter(t => t.schedule_c_entity === "personal");
-  renderTxns(personalTxns, document.getElementById("personal-transactions"));
+  renderAuditTrail(personalTxns, document.getElementById("personal-audit-trail"));
 
   // Grouped expense breakdowns for each entity tab
   renderGroupedExpenses(wrykoTxns, document.getElementById("wryko-grouped-expenses"));
   renderGroupedExpenses(coachingTxns, document.getElementById("coaching-grouped-expenses"));
   renderGroupedExpenses(personalTxns, document.getElementById("personal-grouped-expenses"));
 
-  // Personal summary table (by category)
+  // Personal summary table (Schedule C style with write-off columns)
   const personalGroups = groupTransactionsByCategory(personalTxns);
   const personalSummaryEl = document.getElementById("personal-summary");
   if (personalGroups.length) {
-    let pTotal = 0;
+    let pTotal = 0, pDeductible = 0;
     personalSummaryEl.innerHTML = personalGroups.map(g => {
       pTotal += g.total;
-      return `<tr><td style="font-weight:500">${g.icon} ${g.name}</td><td class="amount negative">${fmt(g.total)}</td><td style="text-align:right">${g.items.length}</td></tr>`;
-    }).join("") + `<tr class="total-row"><td>Total</td><td class="amount">${fmt(pTotal)}</td><td></td></tr>`;
+      pDeductible += g.deductibleTotal;
+      const avgRate = g.total > 0 ? ((g.deductibleTotal / g.total) * 100).toFixed(0) : "0";
+      const rateClass = avgRate >= 100 ? "writeoff-full" : avgRate > 0 ? "writeoff-partial" : "writeoff-none";
+      return `<tr><td style="font-weight:500">${g.icon} ${g.name}</td>
+              <td><span class="writeoff-badge ${rateClass}">${avgRate}%</span> <span style="color:var(--text-muted);font-size:11px">${g.items.length} txns</span></td>
+              <td class="amount">${fmt(g.total)}</td>
+              <td class="amount ${g.deductibleTotal > 0 ? 'positive' : ''}">${fmt(g.deductibleTotal)}</td></tr>`;
+    }).join("") + `<tr class="total-row"><td>Total</td><td></td><td class="amount">${fmt(pTotal)}</td><td class="amount">${fmt(pDeductible)}</td></tr>`;
   } else {
-    personalSummaryEl.innerHTML = emptyRow(3, "No personal transactions yet.");
+    personalSummaryEl.innerHTML = emptyRow(4, "No personal transactions yet.");
   }
 
   // Charts — Overview
   const allGroups = groupTransactionsByCategory(txns);
-  const personalExpenseTotal = personalTxns.filter(t => t.type !== "income").reduce((s, t) => s + parseFloat(t.amount || 0), 0);
-  renderOverviewBarChart(w, c, personalExpenseTotal);
+  const personalIncomeTotal = personalTxns.filter(t => t.type === "income").reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+  const personalExpenseTotal = personalTxns.filter(t => t.type !== "income").reduce((s, t) => s + Math.abs(parseFloat(t.amount || 0)), 0);
+  renderOverviewBarChart(w, c, personalIncomeTotal, personalExpenseTotal);
   renderDonutChart("chart-overview-donut", allGroups);
 
   // Charts — Entity donut charts
@@ -1414,26 +1483,27 @@ async function loadDashboard() {
 function initFilters() {
   const txnData = window._vaultTxns;
 
-  // Entity filters (Wryko, Coaching, Personal) with date + search
+  // Entity filters (Wryko, Coaching, Personal) — search across audit trail
   ["wryko", "coaching", "personal"].forEach(entity => {
     const input = document.getElementById(`filter-${entity}`);
     if (!input) return;
     input.value = "";
     const countEl = document.getElementById(`filter-${entity}-count`);
-    const tbody = document.getElementById(`${entity}-transactions`);
-    const entityTxns = txnData[entity] || [];
+    const container = document.getElementById(`${entity}-audit-trail`);
+    if (!container) return;
 
     function applyFilter() {
       const q = input.value.toLowerCase().trim();
-      const rows = tbody.querySelectorAll("tr");
-      let shown = 0;
-      rows.forEach((row, i) => {
+      const rows = container.querySelectorAll("tbody tr");
+      let shown = 0, total = 0;
+      rows.forEach(row => {
+        total++;
         const text = row.textContent.toLowerCase();
         const match = !q || text.includes(q);
         row.style.display = match ? "" : "none";
         if (match) shown++;
       });
-      countEl.textContent = q ? `${shown} of ${rows.length}` : `${rows.length} transactions`;
+      countEl.textContent = q ? `${shown} of ${total}` : `${total} transactions`;
     }
     input.addEventListener("input", applyFilter);
     applyFilter();
