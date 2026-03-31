@@ -537,6 +537,30 @@
     .filter-bar { flex-direction: column; }
     .filter-input { min-width: 100%; }
   }
+
+  /* ============ PRINT / PDF STYLES ============ */
+  @media print {
+    body { background: white; font-size: 11px; }
+    .container { max-width: 100%; padding: 0; }
+    .header { border-radius: 0; page-break-after: avoid; }
+    .header::before, .header::after { display: none; }
+    button, .filter-bar, .filter-input, .filter-select, .tabs-bar, .year-toggle { display: none !important; }
+    .content { border: none; box-shadow: none; padding: 16px; }
+    .tab-panel { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+    .tab-panel::before { content: attr(data-print-title); display: block; font-size: 16px; font-weight: 800; color: #1e293b; margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+    .stats-grid { box-shadow: none; border: 1px solid #e2e8f0; }
+    .stat-card::before { display: none; }
+    .chart-card { border: 1px solid #e2e8f0; box-shadow: none; page-break-inside: avoid; }
+    .category-group { break-inside: avoid; }
+    .category-group-items { max-height: none !important; }
+    .category-group.open .category-group-items, .category-group-items { max-height: none !important; overflow: visible !important; }
+    .section { page-break-inside: avoid; }
+    .footer { page-break-before: auto; }
+    table { font-size: 10px; }
+    canvas { max-height: 200px !important; }
+    .empty-state { display: none; }
+    #no-transactions { display: none !important; }
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
@@ -558,6 +582,7 @@
         <div class="owner">Marcos Matthews</div>
         <div class="ein">Wryko LLC &middot; EIN 41-4275726</div>
         <div class="updated">Last updated: <span id="last-updated">Loading...</span></div>
+        <button onclick="exportPDF()" style="margin-top:8px;padding:7px 18px;border:1px solid var(--accent-gold);border-radius:20px;background:linear-gradient(135deg,var(--accent-gold),var(--accent-gold-light));color:var(--primary-dark);font-family:inherit;font-size:11px;font-weight:700;letter-spacing:0.5px;cursor:pointer;transition:all 0.2s">EXPORT PDF</button>
       </div>
     </div>
   </div>
@@ -593,7 +618,6 @@
     <div class="tab" data-tab="schedule-c-coaching">Schedule C — Coaching</div>
     <div class="tab" data-tab="personal">Personal</div>
     <div class="tab" data-tab="transactions">Transactions<span class="tab-count" id="txn-count">0</span></div>
-    <div class="tab" data-tab="quarterly">Quarterly</div>
   </div>
 
   <!-- CONTENT -->
@@ -639,6 +663,37 @@
         <table>
           <thead><tr><th>Account</th><th>Institution</th><th>Type</th><th>Balance</th></tr></thead>
           <tbody id="accounts-table"></tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Quarterly Estimates &amp; Projections</div>
+        </div>
+        <div class="filter-bar">
+          <select class="filter-select" id="projection-range">
+            <option value="quarter">This Quarter</option>
+            <option value="half">6 Months</option>
+            <option value="year" selected>Full Year</option>
+          </select>
+          <span class="filter-count" id="projection-label"></span>
+        </div>
+        <div class="chart-row">
+          <div class="chart-card">
+            <div class="chart-card-title">Projected Annual Finances</div>
+            <canvas id="chart-projections"></canvas>
+          </div>
+          <div class="chart-card">
+            <div class="chart-card-title" id="projection-summary-title">Year-End Projection</div>
+            <table>
+              <thead><tr><th>Metric</th><th>Current YTD</th><th>Projected</th></tr></thead>
+              <tbody id="projection-table"></tbody>
+            </table>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Quarter</th><th>Period</th><th>Due Date</th><th>Est. Payment</th><th>Status</th></tr></thead>
+          <tbody id="quarterly-table"></tbody>
         </table>
       </div>
     </div>
@@ -805,28 +860,8 @@
       </div>
     </div>
 
-    <!-- QUARTERLY -->
-    <div class="tab-panel" id="panel-quarterly">
-      <div class="section">
-        <div class="section-header">
-          <div class="section-header-bar"></div>
-          <div class="section-title">Quarterly Estimated Tax Payments</div>
-        </div>
-        <table>
-          <thead><tr><th>Quarter</th><th>Period</th><th>Due Date</th><th>Est. Payment</th><th>Status</th></tr></thead>
-          <tbody id="quarterly-table"></tbody>
-        </table>
-      </div>
-      <div class="section">
-        <div class="section-header">
-          <div class="section-header-bar"></div>
-          <div class="section-title">Monthly Breakdown</div>
-        </div>
-        <div class="chart-card" style="border:none;padding:0;">
-          <canvas id="chart-monthly" style="max-height:300px"></canvas>
-        </div>
-      </div>
-    </div>
+    <!-- MONTHLY BREAKDOWN (moved from Quarterly) -->
+    <div style="display:none"><canvas id="chart-monthly"></canvas></div>
 
   </div>
 
@@ -952,9 +987,12 @@ function renderGroupedExpenses(txns, el) {
     el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#x1F4AD;</div><div class="empty-state-title">No expenses yet</div><div class="empty-state-text">Expenses will appear here grouped by category.</div></div>`;
     return;
   }
-  el.innerHTML = groups.map((g, i) => `
-    <div class="category-group${i === 0 ? ' open' : ''}" onclick="this.classList.toggle('open')">
-      <div class="category-group-header">
+  const uid = "ge_" + Math.random().toString(36).slice(2, 8);
+  el.innerHTML = groups.map((g, i) => {
+    const gid = `${uid}_${i}`;
+    return `
+    <div class="category-group${i === 0 ? ' open' : ''}">
+      <div class="category-group-header" onclick="this.parentElement.classList.toggle('open')">
         <div class="category-group-left">
           <div class="category-group-icon">${g.icon}</div>
           <div>
@@ -975,6 +1013,9 @@ function renderGroupedExpenses(txns, el) {
         </div>
       </div>
       <div class="category-group-items">
+        <div class="filter-bar" style="padding:8px 14px 0" onclick="event.stopPropagation()">
+          <input type="text" class="filter-input" style="font-size:12px;padding:7px 12px 7px 32px" placeholder="Filter ${g.name}..." oninput="(function(el){var q=el.value.toLowerCase();el.closest('.category-group-items').querySelectorAll('tbody tr').forEach(function(r){r.style.display=(!q||r.textContent.toLowerCase().includes(q))?'':'none'});})(this)">
+        </div>
         <table>
           <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Amount</th><th>Write-Off %</th><th>Deductible</th></tr></thead>
           <tbody>${g.items.map(t => `
@@ -989,8 +1030,8 @@ function renderGroupedExpenses(txns, el) {
           </tbody>
         </table>
       </div>
-    </div>
-  `).join("");
+    </div>`;
+  }).join("");
 }
 
 function renderAuditTrail(txns, el) {
@@ -998,6 +1039,7 @@ function renderAuditTrail(txns, el) {
   const expenses = txns.filter(t => t.type !== "income");
   const incomeTotal = income.reduce((s, t) => s + parseFloat(t.amount || 0), 0);
   const expenseTotal = expenses.reduce((s, t) => s + Math.abs(parseFloat(t.amount || 0)), 0);
+  const filterHtml = (label) => `<div class="filter-bar" style="padding:8px 14px 0" onclick="event.stopPropagation()"><input type="text" class="filter-input" style="font-size:12px;padding:7px 12px 7px 32px" placeholder="Filter ${label}..." oninput="(function(el){var q=el.value.toLowerCase();el.closest('.category-group-items').querySelectorAll('tbody tr').forEach(function(r){r.style.display=(!q||r.textContent.toLowerCase().includes(q))?'':'none'});})(this)"></div>`;
 
   function txnRows(rows) {
     return rows.map(t =>
@@ -1010,8 +1052,8 @@ function renderAuditTrail(txns, el) {
 
   let html = "";
   if (income.length) {
-    html += `<div class="category-group open" onclick="this.classList.toggle('open')">
-      <div class="category-group-header">
+    html += `<div class="category-group open">
+      <div class="category-group-header" onclick="this.parentElement.classList.toggle('open')">
         <div class="category-group-left">
           <div class="category-group-icon" style="background:var(--emerald-100)">&#x2197;</div>
           <div>
@@ -1028,14 +1070,15 @@ function renderAuditTrail(txns, el) {
         </div>
       </div>
       <div class="category-group-items">
+        ${filterHtml("income")}
         <table><thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
         <tbody>${txnRows(income)}</tbody></table>
       </div>
     </div>`;
   }
   if (expenses.length) {
-    html += `<div class="category-group" onclick="this.classList.toggle('open')">
-      <div class="category-group-header">
+    html += `<div class="category-group">
+      <div class="category-group-header" onclick="this.parentElement.classList.toggle('open')">
         <div class="category-group-left">
           <div class="category-group-icon" style="background:var(--rose-100)">&#x2198;</div>
           <div>
@@ -1052,6 +1095,7 @@ function renderAuditTrail(txns, el) {
         </div>
       </div>
       <div class="category-group-items">
+        ${filterHtml("expenses")}
         <table><thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
         <tbody>${txnRows(expenses)}</tbody></table>
       </div>
@@ -1111,26 +1155,45 @@ function renderOverviewBarChart(w, c, personalIncome, personalExpenses) {
   const cExp = parseFloat(c.total_expenses || 0);
   const cNet = parseFloat(c.net_profit_loss || 0);
   const pNet = personalIncome - personalExpenses;
+
+  // Net bar colors based on positive/negative
+  const netBg = [wNet, cNet, pNet].map(v => v >= 0 ? "rgba(96,165,250,0.25)" : "rgba(251,113,133,0.25)");
+  const netBorder = [wNet, cNet, pNet].map(v => v >= 0 ? "#60a5fa" : "#fb7185");
+
   makeChart("chart-overview-bar", {
     type: "bar",
     data: {
       labels: ["Wryko LLC", "Coaching", "Personal"],
       datasets: [
-        { label: "Income", data: [wInc, cInc, personalIncome], backgroundColor: "#34d399", borderRadius: 6, barPercentage: 0.5, categoryPercentage: 0.6 },
-        { label: "Expenses", data: [wExp, cExp, personalExpenses], backgroundColor: "#fb7185", borderRadius: 6, barPercentage: 0.5, categoryPercentage: 0.6 },
-        { label: "Net", data: [wNet, cNet, pNet], backgroundColor: data => data.parsed.y >= 0 ? "rgba(52,211,153,0.3)" : "rgba(251,113,133,0.3)", borderColor: data => data.parsed.y >= 0 ? "#34d399" : "#fb7185", borderWidth: 2, borderRadius: 6, barPercentage: 0.5, categoryPercentage: 0.6, borderDash: [4, 4] },
+        { label: "Income", data: [wInc || 0.001, cInc, personalIncome], backgroundColor: "#34d399", borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.7 },
+        { label: "Expenses", data: [wExp, cExp, personalExpenses], backgroundColor: "#fb7185", borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.7 },
+        { label: "Net", data: [wNet, cNet, pNet], backgroundColor: netBg, borderColor: netBorder, borderWidth: 2, borderRadius: 6, barPercentage: 0.6, categoryPercentage: 0.7 },
       ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: true,
       scales: {
-        x: { grid: { display: false }, ticks: { font: { size: 12, weight: 600, family: "Inter" }, color: "#1e293b" } },
-        y: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() }, beginAtZero: true },
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 12, weight: 700, family: "Inter" }, color: "#1e293b" },
+        },
+        y: {
+          grid: { color: "#f1f5f9" },
+          ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() },
+        },
       },
       plugins: {
         legend: { labels: { boxWidth: 12, padding: 16, font: { size: 11, family: "Inter" }, usePointStyle: true } },
-        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const val = ctx.parsed.y;
+              if (ctx.dataset.label === "Income" && val < 0.01) return ` Income: $0.00 (no revenue yet)`;
+              return ` ${ctx.dataset.label}: ${fmt(val)}`;
+            },
+          },
+        },
       },
     },
   });
@@ -1294,7 +1357,6 @@ async function loadDashboard() {
     "schedule-c-coaching": { income: cIncome, expenses: cExpenses, net: cNet, tax: cNet > 0 ? cNet * 0.153 : 0, incomeLabel: "Coaching Revenue", expLabel: "Coaching Expenses", netLabel: "Net Profit / Loss", taxLabel: "Est. SE Tax" },
     personal: { income: 0, expenses: 0, net: 0, tax: 0, incomeLabel: "Personal Income", expLabel: "Total Spending", netLabel: "Net Cash Flow", taxLabel: "Deductible" },
     transactions: { income: totalIncome, expenses: totalExpenses, net: netPL, tax: totalTax, incomeLabel: "Gross Income", expLabel: "Total Deductions", netLabel: "Net Profit / Loss", taxLabel: "Est. Tax Liability" },
-    quarterly: { income: totalIncome, expenses: totalExpenses, net: netPL, tax: totalTax, incomeLabel: "Gross Income", expLabel: "Total Deductions", netLabel: "Net Profit / Loss", taxLabel: "Est. Tax Liability" },
   };
 
   // Calculate personal totals from transactions
@@ -1474,6 +1536,65 @@ async function loadDashboard() {
   // Monthly breakdown — Chart.js bar chart
   renderMonthlyChart(txns);
 
+  // Projections dashboard
+  function renderProjections(range) {
+    const today = new Date();
+    const dayOfYear = Math.floor((today - new Date(YEAR, 0, 1)) / 86400000) + 1;
+    const daysInYear = 365;
+    const monthsElapsed = today.getMonth() + (today.getDate() / 30);
+    const multiplier = range === "quarter" ? (3 / monthsElapsed) : range === "half" ? (6 / monthsElapsed) : (12 / monthsElapsed);
+    const rangeLabel = range === "quarter" ? "Quarter" : range === "half" ? "6-Month" : "Annual";
+    const targetMonths = range === "quarter" ? 3 : range === "half" ? 6 : 12;
+
+    const projIncome = totalIncome * multiplier;
+    const projExpenses = totalExpenses * multiplier;
+    const projNet = projIncome - projExpenses;
+    const projSeTax = projNet > 0 ? projNet * 0.153 : 0;
+    const projAgi = projNet - (projSeTax / 2);
+    const projTaxable = Math.max(0, projAgi - 15000);
+    const projFedTax = projTaxable * 0.10;
+    const projTotalTax = projSeTax + projFedTax;
+
+    document.getElementById("projection-summary-title").textContent = `${rangeLabel} Projection`;
+    document.getElementById("projection-label").textContent = `Projecting from ${monthsElapsed.toFixed(1)} months of data`;
+
+    document.getElementById("projection-table").innerHTML = `
+      <tr><td>Gross Income</td><td class="amount positive">${fmt(totalIncome)}</td><td class="amount positive">${fmt(projIncome)}</td></tr>
+      <tr><td>Total Expenses</td><td class="amount negative">${fmt(-totalExpenses)}</td><td class="amount negative">${fmt(-projExpenses)}</td></tr>
+      <tr><td>Net Profit / Loss</td><td class="${cls(netPL)}">${fmt(netPL)}</td><td class="${cls(projNet)}">${fmt(projNet)}</td></tr>
+      <tr><td>SE Tax (15.3%)</td><td class="amount">${fmt(seTax)}</td><td class="amount">${fmt(projSeTax)}</td></tr>
+      <tr class="total-row"><td>Est. Total Tax</td><td class="amount negative">${fmt(totalTax)}</td><td class="amount negative">${fmt(projTotalTax)}</td></tr>
+    `;
+
+    // Projections bar chart — YTD vs Projected
+    makeChart("chart-projections", {
+      type: "bar",
+      data: {
+        labels: ["Income", "Expenses", "Net", "Tax"],
+        datasets: [
+          { label: "Current YTD", data: [totalIncome, totalExpenses, netPL, totalTax], backgroundColor: ["#34d399", "#fb7185", netPL >= 0 ? "#60a5fa" : "#fbbf24", "#94a3b8"], borderRadius: 6, barPercentage: 0.5 },
+          { label: `${rangeLabel} Projected`, data: [projIncome, projExpenses, projNet, projTotalTax], backgroundColor: ["rgba(52,211,153,0.35)", "rgba(251,113,133,0.35)", projNet >= 0 ? "rgba(96,165,250,0.35)" : "rgba(251,191,36,0.35)", "rgba(148,163,184,0.35)"], borderColor: ["#34d399", "#fb7185", projNet >= 0 ? "#60a5fa" : "#fbbf24", "#94a3b8"], borderWidth: 2, borderRadius: 6, barPercentage: 0.5, borderDash: [4, 4] },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 12, weight: 600, family: "Inter" } } },
+          y: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() } },
+        },
+        plugins: {
+          legend: { labels: { boxWidth: 12, padding: 14, font: { size: 11, family: "Inter" }, usePointStyle: true } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` } },
+        },
+      },
+    });
+  }
+
+  renderProjections("year");
+  const projSelect = document.getElementById("projection-range");
+  if (projSelect) projSelect.addEventListener("change", () => renderProjections(projSelect.value));
+
   // Store data for filters
   window._vaultTxns = { all: txns, wryko: wrykoTxns, coaching: coachingTxns, personal: personalTxns };
   initFilters();
@@ -1619,6 +1740,27 @@ function initFilters() {
 
   // Apply default "This Week" filter on load
   filterAllTransactions();
+}
+
+function exportPDF() {
+  // Open all collapsible sections for print
+  document.querySelectorAll(".category-group").forEach(g => g.classList.add("open"));
+  // Show all tab panels for print
+  document.querySelectorAll(".tab-panel").forEach(p => {
+    p.dataset.printTitle = p.id.replace("panel-", "").replace(/-/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+    p.style.display = "block";
+  });
+  // Set document title for PDF filename
+  const origTitle = document.title;
+  document.title = `VAULT Tax Dashboard - ${YEAR} - Marcos Matthews`;
+  window.print();
+  // Restore after print
+  setTimeout(() => {
+    document.title = origTitle;
+    document.querySelectorAll(".tab-panel").forEach(p => {
+      p.style.display = "";
+    });
+  }, 1000);
 }
 
 loadDashboard();
