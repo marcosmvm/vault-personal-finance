@@ -8,57 +8,57 @@
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
   :root {
-    /* Core palette */
-    --navy-950: #020617;
-    --navy-900: #0f172a;
-    --navy-800: #1e293b;
-    --navy-700: #334155;
-    --navy-600: #475569;
-    --navy-500: #64748b;
-    --navy-400: #94a3b8;
-    --navy-300: #cbd5e1;
-    --navy-200: #e2e8f0;
-    --navy-100: #f1f5f9;
-    --navy-50: #f8fafc;
+    /* Premium Sporty Elegance palette */
+    --primary-dark: #1a1a2e;
+    --primary-dark-plum: #2d1f3d;
+    --accent-gold: #d4a574;
+    --accent-gold-light: #e8c99b;
+    --accent-gold-50: rgba(212,165,116,0.08);
+    --accent-gold-100: rgba(212,165,116,0.15);
+    --violet: #c084fc;
+    --violet-100: rgba(192,132,252,0.15);
+    --emerald: #34d399;
+    --emerald-dark: #059669;
+    --emerald-100: rgba(52,211,153,0.15);
+    --emerald-50: rgba(52,211,153,0.08);
+    --rose: #fb7185;
+    --rose-dark: #e11d48;
+    --rose-100: rgba(251,113,133,0.15);
+    --rose-50: rgba(251,113,133,0.08);
+    --amber: #fbbf24;
+    --amber-dark: #b45309;
+    --amber-100: rgba(251,191,36,0.15);
+    --amber-50: rgba(251,191,36,0.08);
+    --slate: #94a3b8;
+    --slate-dark: #475569;
+    --slate-100: rgba(148,163,184,0.15);
+
+    --bg: #f5f3f0;
     --white: #ffffff;
-
-    /* Accent */
-    --teal-500: #06b6d4;
-    --teal-400: #22d3ee;
-    --teal-100: #cffafe;
-    --teal-50: #ecfeff;
-    --violet-600: #7c3aed;
-    --violet-500: #8b5cf6;
-    --violet-100: #ede9fe;
-    --violet-50: #f5f3ff;
-
-    /* Semantic */
-    --emerald-600: #059669;
-    --emerald-500: #10b981;
-    --emerald-100: #d1fae5;
-    --emerald-50: #ecfdf5;
-    --rose-500: #f43f5e;
-    --rose-100: #ffe4e6;
-    --rose-50: #fff1f2;
-    --amber-500: #f59e0b;
-    --amber-400: #fbbf24;
-    --amber-100: #fef3c7;
-    --amber-50: #fffbeb;
+    --text-primary: #1a1a2e;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --text-faint: #cbd5e1;
+    --border: #e8e4df;
+    --border-light: #f0ece7;
+    --table-header-bg: #faf8f6;
+    --hover-warm: rgba(212,165,116,0.04);
 
     --radius: 12px;
     --radius-sm: 8px;
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
-    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
-    --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+    --shadow-sm: 0 1px 2px rgba(26,26,46,0.04);
+    --shadow: 0 1px 3px rgba(26,26,46,0.06), 0 1px 2px rgba(26,26,46,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(26,26,46,0.07), 0 2px 4px -2px rgba(26,26,46,0.05);
+    --shadow-lg: 0 10px 25px -3px rgba(26,26,46,0.08), 0 4px 6px -4px rgba(26,26,46,0.04);
+    --shadow-card: 0 1px 3px rgba(26,26,46,0.05), 0 4px 12px rgba(26,26,46,0.04);
   }
 
   * { margin:0; padding:0; box-sizing:border-box; }
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: var(--navy-100);
-    color: var(--navy-700);
+    background: var(--bg);
+    color: var(--text-secondary);
     line-height: 1.6;
     -webkit-font-smoothing: antialiased;
   }
@@ -67,7 +67,7 @@
 
   /* ============ HEADER ============ */
   .header {
-    background: linear-gradient(135deg, var(--navy-950) 0%, #0c1b3a 40%, #162447 70%, #1a1a4e 100%);
+    background: linear-gradient(135deg, #1a1a2e 0%, #231a35 40%, #2d1f3d 100%);
     color: var(--white);
     padding: 32px 40px 28px;
     border-radius: var(--radius) var(--radius) 0 0;
@@ -78,8 +78,8 @@
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, var(--teal-500), var(--violet-500), var(--teal-400));
+    height: 5px;
+    background: linear-gradient(90deg, #d4a574, #e8c99b, #d4a574);
   }
   /* Decorative glow */
   .header::after {
@@ -87,7 +87,7 @@
     position: absolute;
     top: -80px; right: -40px;
     width: 260px; height: 260px;
-    background: radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(212,165,116,0.1) 0%, transparent 70%);
     border-radius: 50%;
     pointer-events: none;
   }
@@ -97,23 +97,23 @@
   }
   .header h1 {
     font-size: 32px; font-weight: 900; letter-spacing: 4px;
-    background: linear-gradient(135deg, var(--white) 0%, var(--teal-400) 100%);
+    background: linear-gradient(135deg, var(--white) 0%, var(--accent-gold) 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     background-clip: text;
   }
   .header .tagline {
     font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
-    color: var(--teal-500); font-weight: 600; margin-top: 4px;
+    color: var(--accent-gold); font-weight: 600; margin-top: 4px;
   }
   .header-meta { text-align: right; }
   .header-meta .owner {
-    font-size: 13px; color: var(--navy-300); font-weight: 500;
+    font-size: 13px; color: var(--text-faint); font-weight: 500;
   }
   .header-meta .ein {
-    font-size: 11px; color: var(--navy-400); margin-top: 2px;
+    font-size: 11px; color: var(--text-muted); margin-top: 2px;
   }
   .header-meta .updated {
-    font-size: 10px; color: var(--navy-500); margin-top: 8px;
+    font-size: 10px; color: var(--slate-dark); margin-top: 8px;
   }
 
   /* Year Selector Pill Toggle */
@@ -127,13 +127,13 @@
     padding: 5px 20px; border-radius: 20px; border: none;
     font-family: inherit; font-size: 12px; font-weight: 600;
     cursor: pointer; transition: all 0.25s ease;
-    color: var(--navy-400); background: transparent;
+    color: var(--text-muted); background: transparent;
     letter-spacing: 0.3px;
   }
   .year-btn.active {
-    background: linear-gradient(135deg, var(--teal-500), var(--violet-500));
-    color: var(--white);
-    box-shadow: 0 2px 8px rgba(6,182,212,0.3);
+    background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-light));
+    color: var(--primary-dark);
+    box-shadow: 0 2px 8px rgba(212,165,116,0.35);
   }
   .year-btn:hover:not(.active) { color: var(--white); }
 
@@ -141,75 +141,75 @@
   .stats-grid {
     display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
     background: var(--white);
-    border-bottom: 1px solid var(--navy-200);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow-card);
   }
   .stat-card {
     padding: 22px 28px;
     position: relative;
-    border-right: 1px solid var(--navy-100);
+    border-right: 1px solid var(--border-light);
     transition: background 0.2s;
   }
   .stat-card:last-child { border-right: none; }
-  .stat-card:hover { background: var(--navy-50); }
+  .stat-card:hover { background: var(--hover-warm); }
   .stat-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
     height: 3px;
   }
-  .stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--emerald-500), var(--emerald-600)); }
-  .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--rose-500), #e11d48); }
-  .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--teal-500), var(--violet-500)); }
-  .stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--amber-500), var(--amber-400)); }
+  .stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--emerald), var(--emerald-dark)); }
+  .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--rose), var(--rose-dark)); }
+  .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent-gold), var(--accent-gold-light)); }
+  .stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--amber), var(--amber-dark)); }
   .stat-icon {
     width: 34px; height: 34px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; margin-bottom: 10px;
+    background: var(--accent-gold-50);
+    color: var(--accent-gold);
   }
-  .stat-card:nth-child(1) .stat-icon { background: var(--emerald-50); color: var(--emerald-600); }
-  .stat-card:nth-child(2) .stat-icon { background: var(--rose-50); color: var(--rose-500); }
-  .stat-card:nth-child(3) .stat-icon { background: var(--teal-50); color: var(--teal-500); }
-  .stat-card:nth-child(4) .stat-icon { background: var(--amber-50); color: var(--amber-500); }
   .stat-label {
     font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
-    color: var(--navy-500); font-weight: 600; margin-bottom: 4px;
+    color: var(--text-muted); font-weight: 600; margin-bottom: 4px;
   }
   .stat-value {
-    font-size: 24px; font-weight: 800; color: var(--navy-900);
+    font-size: 24px; font-weight: 800; color: var(--text-primary);
     font-variant-numeric: tabular-nums; letter-spacing: -0.5px;
   }
-  .stat-value.positive { color: var(--emerald-600); }
-  .stat-value.negative { color: var(--rose-500); }
+  .stat-value.positive { color: var(--emerald-dark); }
+  .stat-value.negative { color: var(--rose); }
 
   /* ============ TABS ============ */
   .tabs-bar {
     background: var(--white);
     padding: 0 32px;
-    border-bottom: 1px solid var(--navy-200);
+    border-bottom: 1px solid var(--border);
     display: flex; gap: 4px;
     overflow-x: auto;
+    box-shadow: var(--shadow-sm);
   }
   .tab {
     padding: 14px 18px; font-size: 13px; font-weight: 600;
-    color: var(--navy-500); cursor: pointer;
+    color: var(--text-muted); cursor: pointer;
     border-bottom: 2px solid transparent;
     transition: all 0.2s; white-space: nowrap;
     position: relative;
   }
-  .tab:hover { color: var(--navy-800); }
+  .tab:hover { color: var(--text-primary); }
   .tab.active {
-    color: var(--teal-500);
-    border-bottom-color: var(--teal-500);
+    color: var(--accent-gold);
+    border-bottom-color: var(--accent-gold);
   }
   .tab-count {
     display: inline-flex; align-items: center; justify-content: center;
     min-width: 18px; height: 18px; padding: 0 5px;
-    background: var(--navy-100); border-radius: 9px;
-    font-size: 10px; font-weight: 700; color: var(--navy-500);
+    background: var(--border-light); border-radius: 9px;
+    font-size: 10px; font-weight: 700; color: var(--text-muted);
     margin-left: 6px;
   }
   .tab.active .tab-count {
-    background: var(--teal-50); color: var(--teal-500);
+    background: var(--accent-gold-100); color: var(--accent-gold);
   }
 
   /* ============ CONTENT ============ */
@@ -230,42 +230,42 @@
   .section-header {
     display: flex; align-items: center; gap: 10px;
     margin-bottom: 16px; padding-bottom: 10px;
-    border-bottom: 1px solid var(--navy-200);
+    border-bottom: 1px solid var(--border);
   }
   .section-header-bar {
     width: 4px; height: 20px;
-    background: linear-gradient(180deg, var(--teal-500), var(--violet-500));
+    background: linear-gradient(180deg, var(--accent-gold), var(--accent-gold-light));
     border-radius: 4px; flex-shrink: 0;
   }
   .section-title {
     font-size: 13px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1px; color: var(--navy-900);
+    letter-spacing: 1px; color: var(--text-primary);
   }
 
   /* ============ TABLES ============ */
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th {
     text-align: left; font-size: 10px; text-transform: uppercase;
-    letter-spacing: 0.8px; color: var(--navy-500); font-weight: 700;
+    letter-spacing: 0.8px; color: var(--text-muted); font-weight: 700;
     padding: 10px 14px;
-    background: var(--navy-50);
-    border-bottom: 1px solid var(--navy-200);
+    background: var(--table-header-bg);
+    border-bottom: 1px solid var(--border);
   }
   thead th:first-child { border-radius: var(--radius-sm) 0 0 0; }
   thead th:last-child { text-align: right; border-radius: 0 var(--radius-sm) 0 0; }
   tbody td {
     padding: 11px 14px;
-    border-bottom: 1px solid var(--navy-100);
-    color: var(--navy-700);
+    border-bottom: 1px solid var(--border-light);
+    color: var(--text-secondary);
   }
   tbody td:last-child { text-align: right; }
   tbody tr { transition: background 0.15s; }
-  tbody tr:nth-child(even) { background: rgba(248,250,252,0.5); }
-  tbody tr:hover { background: var(--navy-50); }
+  tbody tr:nth-child(even) { background: rgba(245,243,240,0.4); }
+  tbody tr:hover { background: var(--hover-warm); }
 
   .amount { font-variant-numeric: tabular-nums; font-weight: 600; }
-  .amount.positive { color: var(--emerald-600); }
-  .amount.negative { color: var(--rose-500); }
+  .amount.positive { color: var(--emerald-dark); }
+  .amount.negative { color: var(--rose); }
 
   /* Entity Badges */
   .badge {
@@ -274,29 +274,29 @@
     font-size: 10px; font-weight: 700; text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-  .badge-wryko { background: var(--violet-100); color: var(--violet-600); }
-  .badge-coaching { background: var(--emerald-100); color: var(--emerald-600); }
-  .badge-personal { background: var(--navy-100); color: var(--navy-600); }
-  .badge-review { background: var(--amber-100); color: #92400e; }
+  .badge-wryko { background: var(--violet-100); color: var(--violet); }
+  .badge-coaching { background: var(--emerald-100); color: var(--emerald-dark); }
+  .badge-personal { background: var(--slate-100); color: var(--slate-dark); }
+  .badge-review { background: var(--amber-100); color: var(--amber-dark); }
 
   /* Total row */
   .total-row td {
-    font-weight: 800; color: var(--navy-900);
-    border-top: 2px solid var(--navy-800); border-bottom: none;
+    font-weight: 800; color: var(--text-primary);
+    border-top: 2px solid var(--primary-dark); border-bottom: none;
     padding-top: 14px;
   }
 
   .rate {
     display: inline-block; padding: 2px 8px; border-radius: 4px;
-    background: var(--navy-50); color: var(--navy-500);
+    background: var(--table-header-bg); color: var(--text-muted);
     font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums;
   }
 
   /* Transaction rows with entity color border */
-  .txn-wryko { border-left: 3px solid var(--violet-500); }
-  .txn-coaching { border-left: 3px solid var(--emerald-500); }
-  .txn-personal { border-left: 3px solid var(--navy-300); }
-  .txn-review { border-left: 3px solid var(--amber-500); }
+  .txn-wryko { border-left: 3px solid var(--violet); }
+  .txn-coaching { border-left: 3px solid var(--emerald); }
+  .txn-personal { border-left: 3px solid var(--slate); }
+  .txn-review { border-left: 3px solid var(--amber); }
 
   /* Status pills for quarterly */
   .status-pill {
@@ -304,17 +304,17 @@
     padding: 4px 12px; border-radius: 20px;
     font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
   }
-  .status-paid { background: var(--emerald-50); color: var(--emerald-600); }
-  .status-upcoming { background: var(--navy-50); color: var(--navy-500); }
-  .status-overdue { background: var(--amber-50); color: #b45309; }
+  .status-paid { background: var(--emerald-50); color: var(--emerald-dark); }
+  .status-upcoming { background: rgba(148,163,184,0.08); color: var(--slate-dark); }
+  .status-overdue { background: var(--amber-50); color: var(--amber-dark); }
 
   .status-dot {
     width: 6px; height: 6px; border-radius: 50%;
     display: inline-block;
   }
-  .status-paid .status-dot { background: var(--emerald-500); }
-  .status-upcoming .status-dot { background: var(--navy-400); }
-  .status-overdue .status-dot { background: var(--amber-500); }
+  .status-paid .status-dot { background: var(--emerald); }
+  .status-upcoming .status-dot { background: var(--slate); }
+  .status-overdue .status-dot { background: var(--amber); }
 
   /* Monthly CSS bar chart */
   .bar-wrapper { display: flex; align-items: center; gap: 8px; }
@@ -322,16 +322,16 @@
     height: 8px; border-radius: 4px; min-width: 2px;
     transition: width 0.4s ease;
   }
-  .bar-income { background: linear-gradient(90deg, var(--emerald-500), var(--emerald-600)); }
-  .bar-expense { background: linear-gradient(90deg, var(--rose-500), #e11d48); }
+  .bar-income { background: linear-gradient(90deg, var(--emerald), var(--emerald-dark)); }
+  .bar-expense { background: linear-gradient(90deg, var(--rose), var(--rose-dark)); }
 
   /* Account link */
   .account-link {
-    color: var(--navy-700); font-size: 11px; font-weight: 500;
+    color: var(--text-secondary); font-size: 11px; font-weight: 500;
     text-decoration: none; padding: 2px 6px; border-radius: 4px;
-    background: var(--navy-50); transition: all 0.15s;
+    background: var(--table-header-bg); transition: all 0.15s;
   }
-  .account-link:hover { background: var(--navy-200); color: var(--navy-900); }
+  .account-link:hover { background: var(--border); color: var(--text-primary); }
 
   /* Empty state */
   .empty-state {
@@ -339,44 +339,38 @@
   }
   .empty-state-icon {
     width: 64px; height: 64px; border-radius: 50%;
-    background: linear-gradient(135deg, var(--teal-50), var(--violet-50));
+    background: linear-gradient(135deg, var(--accent-gold-50), var(--violet-100));
     display: inline-flex; align-items: center; justify-content: center;
     font-size: 28px; margin-bottom: 16px;
   }
   .empty-state-title {
-    font-size: 15px; font-weight: 700; color: var(--navy-800);
+    font-size: 15px; font-weight: 700; color: var(--text-primary);
     margin-bottom: 6px;
   }
   .empty-state-text {
-    font-size: 13px; color: var(--navy-400); max-width: 360px;
+    font-size: 13px; color: var(--text-muted); max-width: 360px;
     margin: 0 auto; line-height: 1.6;
   }
 
   /* ============ FOOTER ============ */
   .footer {
     text-align: center; padding: 28px 20px;
-    font-size: 11px; color: var(--navy-400);
+    font-size: 11px; color: var(--text-muted);
     line-height: 1.8;
   }
   .footer-brand {
-    font-weight: 800; letter-spacing: 2px; color: var(--navy-300);
+    font-weight: 800; letter-spacing: 2px; color: var(--accent-gold);
     font-size: 12px;
-  }
-  .footer-cpa {
-    display: inline-block; margin-top: 6px;
-    padding: 4px 14px; border-radius: 20px;
-    background: var(--navy-50); border: 1px solid var(--navy-200);
-    font-weight: 600; color: var(--navy-500);
   }
 
   /* ============ LOADING ============ */
   .loading {
-    text-align: center; padding: 80px 20px; color: var(--navy-400);
+    text-align: center; padding: 80px 20px; color: var(--text-muted);
   }
   .spinner {
     display: inline-block; width: 32px; height: 32px;
-    border: 3px solid var(--navy-200);
-    border-top-color: var(--teal-500);
+    border: 3px solid var(--border);
+    border-top-color: var(--accent-gold);
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
     margin-bottom: 12px;
@@ -387,7 +381,7 @@
   /* ============ RESPONSIVE ============ */
   @media (max-width: 768px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
-    .stat-card { border-bottom: 1px solid var(--navy-100); }
+    .stat-card { border-bottom: 1px solid var(--border-light); }
     .stat-card:nth-child(2) { border-right: none; }
     .header-inner { flex-direction: column; gap: 12px; }
     .header-meta { text-align: left; }
@@ -596,11 +590,7 @@
   <!-- FOOTER -->
   <div class="footer">
     <div class="footer-brand">VAULT</div>
-    <div>Marcos Matthews &middot; Wryko LLC (EIN 41-4275726) &middot; Live data via Supabase</div>
-    <div class="footer-cpa">Prepared for CPA Courtney Matthews</div>
-    <div style="margin-top:8px;font-size:10px;color:var(--navy-300)">
-      This document is for tax preparation purposes. Consult your CPA before filing.
-    </div>
+    <div>VAULT Tax Document &middot; Marcos Matthews &middot; Wryko LLC (EIN 41-4275726) &middot; Generated live from Supabase</div>
   </div>
 </div>
 
@@ -663,6 +653,18 @@ const DEDUCTION_RATES = {
   needs_review: { rate: "TBD", label: "Needs Review" },
 };
 
+function accountLink(name) {
+  const urls = {
+    "BofA": "https://www.bankofamerica.com/",
+    "Mercury": "https://app.mercury.com/",
+    "Apple": "https://card.apple.com/",
+  };
+  for (const [key, url] of Object.entries(urls)) {
+    if (name && name.includes(key)) return `<a href="${url}" target="_blank" style="color:#d4a574;text-decoration:none;border-bottom:1px dotted #d4a574">${name}</a>`;
+  }
+  return name || "unknown";
+}
+
 function entityBadge(e) {
   if (!e) return "";
   const map = {
@@ -693,14 +695,13 @@ async function loadDashboard() {
   document.getElementById("txn-year").textContent = YEAR;
   document.getElementById("last-updated").textContent = new Date().toLocaleString();
 
-  // Fetch all data in parallel
-  const [wrykoTotals, coachingTotals, taxLedger, transactions, accounts, needsReview] = await Promise.all([
+  // Fetch all data in parallel — FIXED: pass target_year to vault_ytd_tax_ledger
+  const [wrykoTotals, coachingTotals, taxLedger, transactions, accounts] = await Promise.all([
     rpc("vault_schedule_c_wryko", { target_year: YEAR }),
     rpc("vault_schedule_c_coaching", { target_year: YEAR }),
-    rpc("vault_ytd_tax_ledger"),
+    rpc("vault_ytd_tax_ledger", { target_year: YEAR }),
     query("pf_transactions", `tax_year=eq.${YEAR}&order=date.desc`),
     query("pf_accounts", "order=type,name"),
-    rpc("vault_needs_review"),
   ]);
 
   const w = Array.isArray(wrykoTotals) ? wrykoTotals[0] || {} : wrykoTotals || {};
@@ -749,7 +750,7 @@ async function loadDashboard() {
   const accts = Array.isArray(accounts) ? accounts : [];
   if (accts.length) {
     document.getElementById("accounts-table").innerHTML = accts.map(a =>
-      `<tr><td style="font-weight:600">${a.name}</td><td>${a.institution || ""}</td>
+      `<tr><td style="font-weight:600">${accountLink(a.name)}</td><td>${a.institution || ""}</td>
        <td><span class="badge badge-personal" style="text-transform:capitalize">${(a.type || "").replace("_", " ")}</span></td>
        <td class="${cls(a.current_balance)}">${fmt(a.current_balance)}</td></tr>`
     ).join("");
@@ -772,7 +773,7 @@ async function loadDashboard() {
       const info = DEDUCTION_RATES[r.tax_category] || { rate: "100%", label: "Deductible" };
       total += parseFloat(r.deductible_total || 0);
       return `<tr><td style="font-weight:500">${r.tax_category || ""}</td>
-              <td><span class="rate">${info.rate}</span> <span style="color:var(--navy-500);font-size:11px">${info.label}</span></td>
+              <td><span class="rate">${info.rate}</span> <span style="color:var(--text-muted);font-size:11px">${info.label}</span></td>
               <td class="amount">${fmt(r.total)}</td><td class="amount">${fmt(r.deductible_total)}</td></tr>`;
     }).join("") + `<tr class="total-row"><td>Total</td><td></td><td></td><td class="amount">${fmt(total)}</td></tr>`;
   }
@@ -792,7 +793,7 @@ async function loadDashboard() {
     el.innerHTML = rows.map(t =>
       `<tr><td style="white-space:nowrap;font-variant-numeric:tabular-nums">${t.date || ""}</td>
        <td style="font-weight:500">${t.vendor || ""}</td><td>${t.description || ""}</td>
-       <td><span class="account-link">${t.account || "unknown"}</span></td>
+       <td>${accountLink(t.account)}</td>
        <td class="${cls(t.type === 'income' ? t.amount : -t.amount)}">${t.type === "income" ? "" : "-"}${fmt(t.amount)}</td></tr>`
     ).join("");
   }
@@ -812,8 +813,8 @@ async function loadDashboard() {
        <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${t.date || ""}</td>
        <td style="font-weight:500">${t.vendor || ""}</td><td>${t.description || ""}</td>
        <td>${entityBadge(t.schedule_c_entity)}</td>
-       <td><span class="rate">${(DEDUCTION_RATES[t.tax_category] || {}).rate || ""}</span> <span style="font-size:11px;color:var(--navy-500)">${t.tax_category || ""}</span></td>
-       <td><span class="account-link">${t.account || "unknown"}</span></td>
+       <td><span class="rate">${(DEDUCTION_RATES[t.tax_category] || {}).rate || ""}</span> <span style="font-size:11px;color:var(--text-muted)">${t.tax_category || ""}</span></td>
+       <td>${accountLink(t.account)}</td>
        <td class="${cls(t.type === 'income' ? t.amount : -t.amount)}">${t.type === "income" ? "" : "-"}${fmt(t.amount)}</td></tr>`
     ).join("");
   }

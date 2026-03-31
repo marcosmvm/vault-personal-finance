@@ -70,7 +70,7 @@ def _wrap_html(subject: str, body_text: str) -> str:
         elif stripped.startswith("━") or stripped.startswith("---"):
             html_lines.append(
                 '<table width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0">'
-                '<tr><td style="height:1px;background:linear-gradient(90deg,#06b6d4 0%,#8b5cf6 50%,transparent 100%);'
+                '<tr><td style="height:1px;background:linear-gradient(90deg,#d4a574 0%,#e8c99b 50%,transparent 100%);'
                 'opacity:0.3"></td></tr></table>'
             )
 
@@ -92,7 +92,7 @@ def _wrap_html(subject: str, body_text: str) -> str:
                 # Bullet list wrapper with subtle left accent
                 html_lines.append(
                     '<table width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0">'
-                    '<tr><td style="border-left:3px solid #06b6d4;padding-left:16px;border-radius:0 4px 4px 0">'
+                    '<tr><td style="border-left:3px solid #d4a574;padding-left:16px;border-radius:0 4px 4px 0">'
                     '<table width="100%" cellpadding="0" cellspacing="0">'
                 )
                 in_bullet_list = True
@@ -101,7 +101,7 @@ def _wrap_html(subject: str, body_text: str) -> str:
                 left, right = content.split(" — ", 1)
                 html_lines.append(
                     f'<tr>'
-                    f'<td width="16" valign="top" style="padding:5px 0;color:#8b5cf6;'
+                    f'<td width="16" valign="top" style="padding:5px 0;color:#d4a574;'
                     f'font-size:14px;font-weight:bold">&#x2022;</td>'
                     f'<td style="padding:5px 0;font-size:13px;color:#1e293b;font-weight:600">'
                     f'{left}</td>'
@@ -112,7 +112,7 @@ def _wrap_html(subject: str, body_text: str) -> str:
             else:
                 html_lines.append(
                     f'<tr>'
-                    f'<td width="16" valign="top" style="padding:5px 0;color:#8b5cf6;'
+                    f'<td width="16" valign="top" style="padding:5px 0;color:#d4a574;'
                     f'font-size:14px;font-weight:bold">&#x2022;</td>'
                     f'<td colspan="2" style="padding:5px 0;font-size:13px;color:#334155;'
                     f'line-height:1.7">{content}</td></tr>'
@@ -123,7 +123,7 @@ def _wrap_html(subject: str, body_text: str) -> str:
             html_lines.append(
                 f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 12px">'
                 f'<tr>'
-                f'<td width="4" style="background:linear-gradient(180deg,#06b6d4,#8b5cf6);'
+                f'<td width="4" style="background:linear-gradient(180deg,#d4a574,#e8c99b);'
                 f'border-radius:4px"></td>'
                 f'<td style="padding-left:12px">'
                 f'<div style="font-size:11px;font-weight:800;text-transform:uppercase;'
@@ -157,18 +157,18 @@ def _wrap_html(subject: str, body_text: str) -> str:
 <table width="640" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08),0 1px 3px rgba(15,23,42,0.04)">
 
   <!-- Header with gradient -->
-  <tr><td style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1e293b 100%);padding:0">
+  <tr><td style="background:linear-gradient(135deg,#1a1a2e 0%,#2d1f3d 60%,#1a1a2e 100%);padding:0">
     <!-- Thin accent stripe at top -->
-    <div style="height:4px;background:linear-gradient(90deg,#06b6d4,#8b5cf6,#06b6d4)"></div>
+    <div style="height:4px;background:linear-gradient(90deg,#d4a574,#e8c99b,#d4a574)"></div>
     <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 36px 20px">
       <tr>
         <td>
           <div style="font-size:26px;font-weight:800;letter-spacing:3px;color:#ffffff">VAULT</div>
-          <div style="font-size:10px;letter-spacing:2px;color:#06b6d4;text-transform:uppercase;margin-top:2px;font-weight:600">Personal Finance Intelligence</div>
+          <div style="font-size:10px;letter-spacing:2px;color:#d4a574;text-transform:uppercase;margin-top:2px;font-weight:600">Personal Finance Intelligence</div>
         </td>
         <td align="right" style="vertical-align:top">
-          <div style="display:inline-block;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.2);border-radius:20px;padding:4px 14px">
-            <span style="font-size:10px;color:#67e8f9;letter-spacing:0.5px;font-weight:600">AUTOMATED REPORT</span>
+          <div style="display:inline-block;background:rgba(212,165,116,0.12);border:1px solid rgba(212,165,116,0.25);border-radius:20px;padding:4px 14px">
+            <span style="font-size:10px;color:#e8c99b;letter-spacing:0.5px;font-weight:600">AUTOMATED REPORT</span>
           </div>
         </td>
       </tr>
@@ -191,10 +191,10 @@ def _wrap_html(subject: str, body_text: str) -> str:
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr><td align="center" style="padding:0">
         <table cellpadding="0" cellspacing="0">
-          <tr><td align="center" style="border-radius:12px;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);box-shadow:0 4px 14px rgba(15,23,42,0.2),0 0 0 1px rgba(6,182,212,0.15)">
+          <tr><td align="center" style="border-radius:12px;background:linear-gradient(135deg,#1a1a2e 0%,#2d1f3d 100%);box-shadow:0 4px 14px rgba(15,23,42,0.2),0 0 0 1px rgba(212,165,116,0.15)">
             <a href="{TAX_DASHBOARD_URL}" target="_blank" style="display:inline-block;padding:14px 36px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
               View Tax Dashboard
-              <span style="color:#06b6d4;margin-left:6px">&rarr;</span>
+              <span style="color:#d4a574;margin-left:6px">&rarr;</span>
             </a>
           </td></tr>
         </table>
