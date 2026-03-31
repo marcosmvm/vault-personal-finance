@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VAULT Tax Document — Marcos Matthews</title>
+<style>
+  :root { --slate-900:#0f172a; --slate-700:#334155; --slate-500:#64748b; --slate-300:#cbd5e1;
+          --slate-100:#f1f5f9; --slate-50:#f8fafc; --white:#fff; --green-600:#16a34a;
+          --green-50:#f0fdf4; --red-600:#dc2626; --red-50:#fef2f2; --blue-600:#2563eb; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
+         background:var(--slate-100); color:var(--slate-700); line-height:1.6; }
+  .container { max-width:1000px; margin:0 auto; padding:24px 16px; }
+
+  /* Header */
+  .header { background:var(--slate-900); color:var(--white); padding:28px 36px; border-radius:10px 10px 0 0;
+            display:flex; justify-content:space-between; align-items:center; }
+  .header h1 { font-size:28px; letter-spacing:2px; font-weight:800; }
+  .header .subtitle { color:var(--slate-300); font-size:12px; letter-spacing:1px; text-transform:uppercase; text-align:right; }
+  .header .subtitle div { margin-top:2px; }
+
+  /* Summary bar */
+  .summary-bar { background:var(--white); padding:20px 36px; border-bottom:1px solid var(--slate-300);
+                 display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+  .summary-item { text-align:center; }
+  .summary-item .label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--slate-500); font-weight:600; }
+  .summary-item .value { font-size:22px; font-weight:700; color:var(--slate-900); margin-top:2px; }
+  .summary-item .value.positive { color:var(--green-600); }
+  .summary-item .value.negative { color:var(--red-600); }
+
+  /* Tabs */
+  .tabs { background:var(--white); padding:0 36px; border-bottom:1px solid var(--slate-300); display:flex; gap:0; }
+  .tab { padding:12px 20px; font-size:13px; font-weight:600; color:var(--slate-500); cursor:pointer;
+         border-bottom:2px solid transparent; transition:all 0.2s; }
+  .tab:hover { color:var(--slate-900); }
+  .tab.active { color:var(--slate-900); border-bottom-color:var(--slate-900); }
+
+  /* Content area */
+  .content { background:var(--white); padding:28px 36px; border-radius:0 0 10px 10px; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  /* Section */
+  .section { margin-bottom:28px; }
+  .section-header { font-size:11px; text-transform:uppercase; letter-spacing:1.2px; font-weight:700;
+                    color:var(--slate-900); padding-bottom:8px; border-bottom:2px solid var(--slate-900); margin-bottom:14px; }
+
+  /* Tables */
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  thead th { text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;
+             color:var(--slate-500); font-weight:600; padding:8px 12px; border-bottom:1px solid var(--slate-300); }
+  thead th:last-child, tbody td:last-child { text-align:right; }
+  tbody td { padding:9px 12px; border-bottom:1px solid var(--slate-100); color:var(--slate-700); }
+  tbody tr:hover { background:var(--slate-50); }
+  .amount { font-variant-numeric:tabular-nums; font-weight:500; }
+  .amount.positive { color:var(--green-600); }
+  .amount.negative { color:var(--red-600); }
+  .badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
+  .badge-wryko { background:#ede9fe; color:#5b21b6; }
+  .badge-coaching { background:#ecfdf5; color:#065f46; }
+  .badge-personal { background:#f1f5f9; color:#475569; }
+  .badge-review { background:#fef3c7; color:#92400e; }
+
+  /* Account link */
+  .account-link { color:var(--blue-600); font-size:11px; text-decoration:none; }
+  .account-link:hover { text-decoration:underline; }
+
+  /* Totals row */
+  .total-row td { font-weight:700; color:var(--slate-900); border-top:2px solid var(--slate-900); border-bottom:none; padding-top:12px; }
+
+  /* Deduction rate */
+  .rate { color:var(--slate-500); font-size:11px; }
+
+  /* Footer */
+  .footer { text-align:center; padding:20px; font-size:11px; color:var(--slate-500); }
+
+  /* Loading */
+  .loading { text-align:center; padding:60px; color:var(--slate-500); }
+  .spinner { display:inline-block; width:24px; height:24px; border:3px solid var(--slate-300);
+             border-top-color:var(--slate-900); border-radius:50%; animation:spin 0.8s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  /* Responsive */
+  @media(max-width:700px) {
+    .summary-bar { grid-template-columns:repeat(2,1fr); }
+    .header { flex-direction:column; gap:8px; }
+    .content, .summary-bar, .tabs { padding-left:16px; padding-right:16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <h1>VAULT</h1>
+    <div class="subtitle">
+      <div>Tax Year <span id="tax-year">2026</span></div>
+      <div>Marcos Matthews &bull; EIN 41-4275726</div>
+      <div style="margin-top:6px;font-size:10px;color:#64748b">Last updated: <span id="last-updated">Loading...</span></div>
+    </div>
+  </div>
+
+  <div class="summary-bar" id="summary-bar">
+    <div class="summary-item"><div class="label">Gross Income</div><div class="value" id="s-income">--</div></div>
+    <div class="summary-item"><div class="label">Total Deductions</div><div class="value" id="s-deductions">--</div></div>
+    <div class="summary-item"><div class="label">Net Profit/Loss</div><div class="value" id="s-net">--</div></div>
+    <div class="summary-item"><div class="label">Est. Tax Liability</div><div class="value" id="s-tax">--</div></div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="overview">Overview</div>
+    <div class="tab" data-tab="schedule-c-wryko">Schedule C — Wryko</div>
+    <div class="tab" data-tab="schedule-c-coaching">Schedule C — Coaching</div>
+    <div class="tab" data-tab="transactions">All Transactions</div>
+    <div class="tab" data-tab="quarterly">Quarterly</div>
+  </div>
+
+  <div class="content">
+    <!-- OVERVIEW -->
+    <div class="tab-panel active" id="panel-overview">
+      <div class="section">
+        <div class="section-header">Combined Schedule C Summary</div>
+        <table>
+          <thead><tr><th>Item</th><th>Wryko (Schedule C #1)</th><th>Coaching (Schedule C #2)</th></tr></thead>
+          <tbody id="overview-table"></tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-header">Estimated Tax Calculation (Form 1040)</div>
+        <table>
+          <thead><tr><th>Line Item</th><th>Amount</th></tr></thead>
+          <tbody id="tax-calc-table"></tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-header">Accounts Overview</div>
+        <table>
+          <thead><tr><th>Account</th><th>Institution</th><th>Type</th><th>Balance</th></tr></thead>
+          <tbody id="accounts-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SCHEDULE C WRYKO -->
+    <div class="tab-panel" id="panel-schedule-c-wryko">
+      <div class="section">
+        <div class="section-header">Wryko LLC — Schedule C Expense Detail</div>
+        <table>
+          <thead><tr><th>Category</th><th>Deduction Rate</th><th>Gross Amount</th><th>Deductible Amount</th></tr></thead>
+          <tbody id="wryko-expenses"></tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-header">Wryko — Transaction Detail (Audit Trail)</div>
+        <table>
+          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
+          <tbody id="wryko-transactions"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SCHEDULE C COACHING -->
+    <div class="tab-panel" id="panel-schedule-c-coaching">
+      <div class="section">
+        <div class="section-header">Soccer Coaching — Schedule C Detail</div>
+        <table>
+          <thead><tr><th>Category</th><th>Deduction Rate</th><th>Gross Amount</th><th>Deductible Amount</th></tr></thead>
+          <tbody id="coaching-expenses"></tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-header">Coaching — Transaction Detail (Audit Trail)</div>
+        <table>
+          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
+          <tbody id="coaching-transactions"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALL TRANSACTIONS -->
+    <div class="tab-panel" id="panel-transactions">
+      <div class="section">
+        <div class="section-header">All Transactions — <span id="txn-year">2026</span> YTD</div>
+        <table>
+          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Entity</th><th>Tax Category</th><th>Account</th><th>Amount</th></tr></thead>
+          <tbody id="all-transactions"></tbody>
+        </table>
+        <div id="no-transactions" style="display:none;text-align:center;padding:40px;color:#94a3b8">
+          No transactions recorded yet for this tax year. The intake agent runs every 6 hours to capture new transactions.
+        </div>
+      </div>
+    </div>
+
+    <!-- QUARTERLY -->
+    <div class="tab-panel" id="panel-quarterly">
+      <div class="section">
+        <div class="section-header">Quarterly Estimated Tax Payments</div>
+        <table>
+          <thead><tr><th>Quarter</th><th>Period</th><th>Due Date</th><th>Est. Payment</th><th>Status</th></tr></thead>
+          <tbody id="quarterly-table"></tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-header">Monthly Spending Breakdown</div>
+        <table>
+          <thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th></tr></thead>
+          <tbody id="monthly-table"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    VAULT Tax Document &bull; Marcos Matthews &bull; Wryko LLC (EIN 41-4275726) &bull; Generated live from Supabase<br>
+    This document is for tax preparation purposes. Consult CPA Courtney Matthews before filing.
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://mrqectaahvxvwegxhydz.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ycWVjdGFhaHZ4dndlZ3hoeWR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTU5NjcsImV4cCI6MjA4NDU5MTk2N30.1G3VRD_RlEEW2s4nSV7XnCiVDrTEu6Ahb-jrfCWIeUk";
+const YEAR = new Date().getFullYear();
+
+const headers = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
+const fmt = (n) => {
+  if (n == null) return "$0.00";
+  const v = parseFloat(n);
+  const s = Math.abs(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  return v < 0 ? `-$${s}` : `$${s}`;
+};
+const cls = (n) => parseFloat(n||0) >= 0 ? "amount positive" : "amount negative";
+
+async function query(table, params="") {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, { headers });
+  return r.json();
+}
+async function rpc(fn, body={}) {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
+    method:"POST", headers:{...headers,"Content-Type":"application/json"}, body:JSON.stringify(body)
+  });
+  return r.json();
+}
+
+// Tabs
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(`panel-${tab.dataset.tab}`).classList.add("active");
+  });
+});
+
+const DEDUCTION_RATES = {
+  wryko_expense: { rate: "100%", label: "Fully Deductible" },
+  coaching_expense: { rate: "100%", label: "Fully Deductible" },
+  business_income_wryko: { rate: "N/A", label: "Income" },
+  business_income_coaching: { rate: "N/A", label: "Income" },
+  home_office: { rate: "Partial", label: "Business Use %" },
+  vehicle_mileage: { rate: "$0.70/mi", label: "Standard Mileage" },
+  personal: { rate: "0%", label: "Not Deductible" },
+  needs_review: { rate: "TBD", label: "Needs Review" },
+};
+
+function entityBadge(e) {
+  if (!e) return "";
+  const c = {wryko:"badge-wryko",coaching:"badge-coaching",personal:"badge-personal",split:"badge-review"};
+  return `<span class="badge ${c[e]||"badge-personal"}">${e}</span>`;
+}
+
+async function loadDashboard() {
+  document.getElementById("tax-year").textContent = YEAR;
+  document.getElementById("txn-year").textContent = YEAR;
+  document.getElementById("last-updated").textContent = new Date().toLocaleString();
+
+  // Fetch all data in parallel
+  const [wrykoTotals, coachingTotals, taxLedger, transactions, accounts, needsReview] = await Promise.all([
+    rpc("vault_schedule_c_wryko", {target_year: YEAR}),
+    rpc("vault_schedule_c_coaching", {target_year: YEAR}),
+    rpc("vault_ytd_tax_ledger"),
+    query("pf_transactions", `tax_year=eq.${YEAR}&order=date.desc`),
+    query("pf_accounts", "order=type,name"),
+    rpc("vault_needs_review"),
+  ]);
+
+  const w = Array.isArray(wrykoTotals) ? wrykoTotals[0]||{} : wrykoTotals||{};
+  const c = Array.isArray(coachingTotals) ? coachingTotals[0]||{} : coachingTotals||{};
+
+  const totalIncome = parseFloat(w.gross_receipts||0) + parseFloat(c.gross_receipts||0);
+  const totalExpenses = parseFloat(w.total_expenses||0) + parseFloat(c.total_expenses||0);
+  const netPL = totalIncome - totalExpenses;
+  const seTax = netPL > 0 ? netPL * 0.153 : 0;
+  const halfSE = seTax / 2;
+  const agi = netPL - halfSE;
+  const taxableIncome = Math.max(0, agi - 15000);
+  const fedTax = taxableIncome * 0.10;
+  const totalTax = seTax + fedTax;
+
+  // Summary bar
+  document.getElementById("s-income").textContent = fmt(totalIncome);
+  document.getElementById("s-income").className = "value positive";
+  document.getElementById("s-deductions").textContent = fmt(-totalExpenses);
+  document.getElementById("s-deductions").className = "value negative";
+  document.getElementById("s-net").textContent = fmt(netPL);
+  document.getElementById("s-net").className = `value ${netPL >= 0 ? "positive" : "negative"}`;
+  document.getElementById("s-tax").textContent = fmt(totalTax);
+  document.getElementById("s-tax").className = "value negative";
+
+  // Overview table
+  document.getElementById("overview-table").innerHTML = `
+    <tr><td>Gross Revenue</td><td class="${cls(w.gross_receipts)}">${fmt(w.gross_receipts)}</td><td class="${cls(c.gross_receipts)}">${fmt(c.gross_receipts)}</td></tr>
+    <tr><td>Total Expenses</td><td class="amount negative">${fmt(-parseFloat(w.total_expenses||0))}</td><td class="amount negative">${fmt(-parseFloat(c.total_expenses||0))}</td></tr>
+    <tr class="total-row"><td>Net Profit / (Loss)</td><td class="${cls(w.net_profit_loss)}">${fmt(w.net_profit_loss)}</td><td class="${cls(c.net_profit_loss)}">${fmt(c.net_profit_loss)}</td></tr>
+  `;
+
+  // Tax calc
+  document.getElementById("tax-calc-table").innerHTML = `
+    <tr><td>Combined Self-Employment Income</td><td class="amount">${fmt(netPL)}</td></tr>
+    <tr><td>Self-Employment Tax (15.3%)</td><td class="amount negative">${fmt(seTax)}</td></tr>
+    <tr><td>Less: 1/2 SE Tax Deduction</td><td class="amount positive">${fmt(-halfSE)}</td></tr>
+    <tr><td>Adjusted Gross Income (AGI)</td><td class="amount">${fmt(agi)}</td></tr>
+    <tr><td>Less: Standard Deduction (Single, ${YEAR})</td><td class="amount positive">-$15,000.00</td></tr>
+    <tr><td>Taxable Income</td><td class="amount">${fmt(taxableIncome)}</td></tr>
+    <tr><td>Federal Income Tax (10% bracket)</td><td class="amount">${fmt(fedTax)}</td></tr>
+    <tr class="total-row"><td>Total Estimated Tax Liability</td><td class="amount negative">${fmt(totalTax)}</td></tr>
+  `;
+
+  // Accounts
+  document.getElementById("accounts-table").innerHTML = accounts.map(a =>
+    `<tr><td>${a.name}</td><td>${a.institution||""}</td><td style="text-transform:capitalize">${(a.type||"").replace("_"," ")}</td>
+     <td class="${cls(a.current_balance)}">${fmt(a.current_balance)}</td></tr>`
+  ).join("");
+
+  // Group transactions by entity for Schedule C tabs
+  const ledger = Array.isArray(taxLedger) ? taxLedger : [];
+  const wrykoLedger = ledger.filter(r => r.schedule_c_entity === "wryko");
+  const coachingLedger = ledger.filter(r => r.schedule_c_entity === "coaching");
+
+  function renderLedger(rows, el) {
+    if (!rows.length) { el.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:30px">No transactions yet for this entity</td></tr>'; return; }
+    let total = 0;
+    el.innerHTML = rows.map(r => {
+      const info = DEDUCTION_RATES[r.tax_category] || { rate: "100%", label: "Deductible" };
+      total += parseFloat(r.deductible_total||0);
+      return `<tr><td>${r.tax_category||""}</td><td><span class="rate">${info.rate}</span> ${info.label}</td>
+              <td class="amount">${fmt(r.total)}</td><td class="amount">${fmt(r.deductible_total)}</td></tr>`;
+    }).join("") + `<tr class="total-row"><td>Total</td><td></td><td></td><td class="amount">${fmt(total)}</td></tr>`;
+  }
+  renderLedger(wrykoLedger, document.getElementById("wryko-expenses"));
+  renderLedger(coachingLedger, document.getElementById("coaching-expenses"));
+
+  // Transaction detail tables
+  const txns = Array.isArray(transactions) ? transactions : [];
+  const wrykoTxns = txns.filter(t => t.schedule_c_entity === "wryko");
+  const coachingTxns = txns.filter(t => t.schedule_c_entity === "coaching");
+
+  function renderTxns(rows, el) {
+    if (!rows.length) { el.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:30px">No transactions recorded</td></tr>'; return; }
+    el.innerHTML = rows.map(t =>
+      `<tr><td style="white-space:nowrap">${t.date||""}</td><td>${t.vendor||""}</td><td>${t.description||""}</td>
+       <td><span class="account-link">${t.account||"unknown"}</span></td>
+       <td class="${cls(t.type==="income"?t.amount:-t.amount)}">${t.type==="income"?"":"-"}${fmt(t.amount)}</td></tr>`
+    ).join("");
+  }
+  renderTxns(wrykoTxns, document.getElementById("wryko-transactions"));
+  renderTxns(coachingTxns, document.getElementById("coaching-transactions"));
+
+  // All transactions
+  if (!txns.length) {
+    document.getElementById("no-transactions").style.display = "block";
+  } else {
+    document.getElementById("all-transactions").innerHTML = txns.map(t =>
+      `<tr><td style="white-space:nowrap">${t.date||""}</td><td>${t.vendor||""}</td><td>${t.description||""}</td>
+       <td>${entityBadge(t.schedule_c_entity)}</td>
+       <td><span class="rate">${(DEDUCTION_RATES[t.tax_category]||{}).rate||""}</span> ${t.tax_category||""}</td>
+       <td><span class="account-link">${t.account||"unknown"}</span></td>
+       <td class="${cls(t.type==="income"?t.amount:-t.amount)}">${t.type==="income"?"":"-"}${fmt(t.amount)}</td></tr>`
+    ).join("");
+  }
+
+  // Quarterly estimates
+  const qtrPayment = totalTax > 0 ? totalTax / 4 : 0;
+  const quarters = [
+    { q:"Q1", period:"Jan-Mar", due:`Apr 15, ${YEAR}` },
+    { q:"Q2", period:"Apr-May", due:`Jun 15, ${YEAR}` },
+    { q:"Q3", period:"Jun-Aug", due:`Sep 15, ${YEAR}` },
+    { q:"Q4", period:"Sep-Dec", due:`Jan 15, ${YEAR+1}` },
+  ];
+  const today = new Date();
+  document.getElementById("quarterly-table").innerHTML = quarters.map(q => {
+    const dueDate = new Date(q.due);
+    const isPast = today > dueDate;
+    const status = isPast ? '<span style="color:#dc2626;font-weight:600">DUE</span>' : '<span style="color:#94a3b8">Upcoming</span>';
+    return `<tr><td style="font-weight:600">${q.q}</td><td>${q.period}</td><td>${q.due}</td>
+            <td class="amount">${fmt(qtrPayment)}</td><td>${status}</td></tr>`;
+  }).join("") + `<tr class="total-row"><td>Total Annual</td><td></td><td></td><td class="amount">${fmt(totalTax)}</td><td></td></tr>`;
+
+  // Monthly breakdown (from transactions)
+  const months = {};
+  txns.forEach(t => {
+    const m = t.date ? t.date.substring(0,7) : "unknown";
+    if (!months[m]) months[m] = {income:0, expenses:0};
+    if (t.type === "income") months[m].income += parseFloat(t.amount||0);
+    else months[m].expenses += parseFloat(t.amount||0);
+  });
+  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  const sortedMonths = Object.keys(months).sort();
+  if (sortedMonths.length) {
+    document.getElementById("monthly-table").innerHTML = sortedMonths.map(m => {
+      const d = months[m];
+      const net = d.income - d.expenses;
+      const [y,mo] = m.split("-");
+      const label = `${monthNames[parseInt(mo)-1]||mo} ${y}`;
+      return `<tr><td>${label}</td><td class="amount positive">${fmt(d.income)}</td>
+              <td class="amount negative">${fmt(-d.expenses)}</td><td class="${cls(net)}">${fmt(net)}</td></tr>`;
+    }).join("");
+  } else {
+    document.getElementById("monthly-table").innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:30px">No monthly data yet</td></tr>';
+  }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
