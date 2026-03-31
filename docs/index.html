@@ -3,143 +3,491 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VAULT Tax Document — Marcos Matthews</title>
+<title>VAULT Tax Dashboard — Marcos Matthews</title>
 <style>
-  :root { --slate-900:#0f172a; --slate-700:#334155; --slate-500:#64748b; --slate-300:#cbd5e1;
-          --slate-100:#f1f5f9; --slate-50:#f8fafc; --white:#fff; --green-600:#16a34a;
-          --green-50:#f0fdf4; --red-600:#dc2626; --red-50:#fef2f2; --blue-600:#2563eb; }
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
+  :root {
+    /* Core palette */
+    --navy-950: #020617;
+    --navy-900: #0f172a;
+    --navy-800: #1e293b;
+    --navy-700: #334155;
+    --navy-600: #475569;
+    --navy-500: #64748b;
+    --navy-400: #94a3b8;
+    --navy-300: #cbd5e1;
+    --navy-200: #e2e8f0;
+    --navy-100: #f1f5f9;
+    --navy-50: #f8fafc;
+    --white: #ffffff;
+
+    /* Accent */
+    --teal-500: #06b6d4;
+    --teal-400: #22d3ee;
+    --teal-100: #cffafe;
+    --teal-50: #ecfeff;
+    --violet-600: #7c3aed;
+    --violet-500: #8b5cf6;
+    --violet-100: #ede9fe;
+    --violet-50: #f5f3ff;
+
+    /* Semantic */
+    --emerald-600: #059669;
+    --emerald-500: #10b981;
+    --emerald-100: #d1fae5;
+    --emerald-50: #ecfdf5;
+    --rose-500: #f43f5e;
+    --rose-100: #ffe4e6;
+    --rose-50: #fff1f2;
+    --amber-500: #f59e0b;
+    --amber-400: #fbbf24;
+    --amber-100: #fef3c7;
+    --amber-50: #fffbeb;
+
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.07), 0 2px 4px -2px rgba(0,0,0,0.05);
+    --shadow-lg: 0 10px 25px -3px rgba(0,0,0,0.08), 0 4px 6px -4px rgba(0,0,0,0.04);
+  }
+
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif;
-         background:var(--slate-100); color:var(--slate-700); line-height:1.6; }
-  .container { max-width:1000px; margin:0 auto; padding:24px 16px; }
 
-  /* Header */
-  .header { background:var(--slate-900); color:var(--white); padding:28px 36px; border-radius:10px 10px 0 0;
-            display:flex; justify-content:space-between; align-items:center; }
-  .header h1 { font-size:28px; letter-spacing:2px; font-weight:800; }
-  .header .subtitle { color:var(--slate-300); font-size:12px; letter-spacing:1px; text-transform:uppercase; text-align:right; }
-  .header .subtitle div { margin-top:2px; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--navy-100);
+    color: var(--navy-700);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
 
-  /* Summary bar */
-  .summary-bar { background:var(--white); padding:20px 36px; border-bottom:1px solid var(--slate-300);
-                 display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
-  .summary-item { text-align:center; }
-  .summary-item .label { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--slate-500); font-weight:600; }
-  .summary-item .value { font-size:22px; font-weight:700; color:var(--slate-900); margin-top:2px; }
-  .summary-item .value.positive { color:var(--green-600); }
-  .summary-item .value.negative { color:var(--red-600); }
+  .container { max-width: 1080px; margin: 0 auto; padding: 24px 20px 48px; }
 
-  /* Tabs */
-  .tabs { background:var(--white); padding:0 36px; border-bottom:1px solid var(--slate-300); display:flex; gap:0; }
-  .tab { padding:12px 20px; font-size:13px; font-weight:600; color:var(--slate-500); cursor:pointer;
-         border-bottom:2px solid transparent; transition:all 0.2s; }
-  .tab:hover { color:var(--slate-900); }
-  .tab.active { color:var(--slate-900); border-bottom-color:var(--slate-900); }
+  /* ============ HEADER ============ */
+  .header {
+    background: linear-gradient(135deg, var(--navy-950) 0%, #0c1b3a 40%, #162447 70%, #1a1a4e 100%);
+    color: var(--white);
+    padding: 32px 40px 28px;
+    border-radius: var(--radius) var(--radius) 0 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--teal-500), var(--violet-500), var(--teal-400));
+  }
+  /* Decorative glow */
+  .header::after {
+    content: '';
+    position: absolute;
+    top: -80px; right: -40px;
+    width: 260px; height: 260px;
+    background: radial-gradient(circle, rgba(6,182,212,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .header-inner {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    position: relative; z-index: 1;
+  }
+  .header h1 {
+    font-size: 32px; font-weight: 900; letter-spacing: 4px;
+    background: linear-gradient(135deg, var(--white) 0%, var(--teal-400) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .header .tagline {
+    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--teal-500); font-weight: 600; margin-top: 4px;
+  }
+  .header-meta { text-align: right; }
+  .header-meta .owner {
+    font-size: 13px; color: var(--navy-300); font-weight: 500;
+  }
+  .header-meta .ein {
+    font-size: 11px; color: var(--navy-400); margin-top: 2px;
+  }
+  .header-meta .updated {
+    font-size: 10px; color: var(--navy-500); margin-top: 8px;
+  }
 
-  /* Content area */
-  .content { background:var(--white); padding:28px 36px; border-radius:0 0 10px 10px; }
-  .tab-panel { display:none; }
-  .tab-panel.active { display:block; }
+  /* Year Selector Pill Toggle */
+  .year-toggle {
+    display: inline-flex; gap: 0;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 24px; padding: 3px; margin-top: 10px;
+  }
+  .year-btn {
+    padding: 5px 20px; border-radius: 20px; border: none;
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    cursor: pointer; transition: all 0.25s ease;
+    color: var(--navy-400); background: transparent;
+    letter-spacing: 0.3px;
+  }
+  .year-btn.active {
+    background: linear-gradient(135deg, var(--teal-500), var(--violet-500));
+    color: var(--white);
+    box-shadow: 0 2px 8px rgba(6,182,212,0.3);
+  }
+  .year-btn:hover:not(.active) { color: var(--white); }
 
-  /* Section */
-  .section { margin-bottom:28px; }
-  .section-header { font-size:11px; text-transform:uppercase; letter-spacing:1.2px; font-weight:700;
-                    color:var(--slate-900); padding-bottom:8px; border-bottom:2px solid var(--slate-900); margin-bottom:14px; }
+  /* ============ STAT CARDS ============ */
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    background: var(--white);
+    border-bottom: 1px solid var(--navy-200);
+  }
+  .stat-card {
+    padding: 22px 28px;
+    position: relative;
+    border-right: 1px solid var(--navy-100);
+    transition: background 0.2s;
+  }
+  .stat-card:last-child { border-right: none; }
+  .stat-card:hover { background: var(--navy-50); }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+  }
+  .stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--emerald-500), var(--emerald-600)); }
+  .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--rose-500), #e11d48); }
+  .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--teal-500), var(--violet-500)); }
+  .stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--amber-500), var(--amber-400)); }
+  .stat-icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; margin-bottom: 10px;
+  }
+  .stat-card:nth-child(1) .stat-icon { background: var(--emerald-50); color: var(--emerald-600); }
+  .stat-card:nth-child(2) .stat-icon { background: var(--rose-50); color: var(--rose-500); }
+  .stat-card:nth-child(3) .stat-icon { background: var(--teal-50); color: var(--teal-500); }
+  .stat-card:nth-child(4) .stat-icon { background: var(--amber-50); color: var(--amber-500); }
+  .stat-label {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--navy-500); font-weight: 600; margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 24px; font-weight: 800; color: var(--navy-900);
+    font-variant-numeric: tabular-nums; letter-spacing: -0.5px;
+  }
+  .stat-value.positive { color: var(--emerald-600); }
+  .stat-value.negative { color: var(--rose-500); }
 
-  /* Tables */
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  thead th { text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.8px;
-             color:var(--slate-500); font-weight:600; padding:8px 12px; border-bottom:1px solid var(--slate-300); }
-  thead th:last-child, tbody td:last-child { text-align:right; }
-  tbody td { padding:9px 12px; border-bottom:1px solid var(--slate-100); color:var(--slate-700); }
-  tbody tr:hover { background:var(--slate-50); }
-  .amount { font-variant-numeric:tabular-nums; font-weight:500; }
-  .amount.positive { color:var(--green-600); }
-  .amount.negative { color:var(--red-600); }
-  .badge { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:0.5px; }
-  .badge-wryko { background:#ede9fe; color:#5b21b6; }
-  .badge-coaching { background:#ecfdf5; color:#065f46; }
-  .badge-personal { background:#f1f5f9; color:#475569; }
-  .badge-review { background:#fef3c7; color:#92400e; }
+  /* ============ TABS ============ */
+  .tabs-bar {
+    background: var(--white);
+    padding: 0 32px;
+    border-bottom: 1px solid var(--navy-200);
+    display: flex; gap: 4px;
+    overflow-x: auto;
+  }
+  .tab {
+    padding: 14px 18px; font-size: 13px; font-weight: 600;
+    color: var(--navy-500); cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s; white-space: nowrap;
+    position: relative;
+  }
+  .tab:hover { color: var(--navy-800); }
+  .tab.active {
+    color: var(--teal-500);
+    border-bottom-color: var(--teal-500);
+  }
+  .tab-count {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 5px;
+    background: var(--navy-100); border-radius: 9px;
+    font-size: 10px; font-weight: 700; color: var(--navy-500);
+    margin-left: 6px;
+  }
+  .tab.active .tab-count {
+    background: var(--teal-50); color: var(--teal-500);
+  }
+
+  /* ============ CONTENT ============ */
+  .content {
+    background: var(--white);
+    padding: 32px 36px;
+    border-radius: 0 0 var(--radius) var(--radius);
+    box-shadow: var(--shadow-lg);
+    min-height: 300px;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+  /* ============ SECTIONS ============ */
+  .section { margin-bottom: 32px; }
+  .section:last-child { margin-bottom: 0; }
+  .section-header {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--navy-200);
+  }
+  .section-header-bar {
+    width: 4px; height: 20px;
+    background: linear-gradient(180deg, var(--teal-500), var(--violet-500));
+    border-radius: 4px; flex-shrink: 0;
+  }
+  .section-title {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--navy-900);
+  }
+
+  /* ============ TABLES ============ */
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  thead th {
+    text-align: left; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.8px; color: var(--navy-500); font-weight: 700;
+    padding: 10px 14px;
+    background: var(--navy-50);
+    border-bottom: 1px solid var(--navy-200);
+  }
+  thead th:first-child { border-radius: var(--radius-sm) 0 0 0; }
+  thead th:last-child { text-align: right; border-radius: 0 var(--radius-sm) 0 0; }
+  tbody td {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--navy-100);
+    color: var(--navy-700);
+  }
+  tbody td:last-child { text-align: right; }
+  tbody tr { transition: background 0.15s; }
+  tbody tr:nth-child(even) { background: rgba(248,250,252,0.5); }
+  tbody tr:hover { background: var(--navy-50); }
+
+  .amount { font-variant-numeric: tabular-nums; font-weight: 600; }
+  .amount.positive { color: var(--emerald-600); }
+  .amount.negative { color: var(--rose-500); }
+
+  /* Entity Badges */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .badge-wryko { background: var(--violet-100); color: var(--violet-600); }
+  .badge-coaching { background: var(--emerald-100); color: var(--emerald-600); }
+  .badge-personal { background: var(--navy-100); color: var(--navy-600); }
+  .badge-review { background: var(--amber-100); color: #92400e; }
+
+  /* Total row */
+  .total-row td {
+    font-weight: 800; color: var(--navy-900);
+    border-top: 2px solid var(--navy-800); border-bottom: none;
+    padding-top: 14px;
+  }
+
+  .rate {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    background: var(--navy-50); color: var(--navy-500);
+    font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums;
+  }
+
+  /* Transaction rows with entity color border */
+  .txn-wryko { border-left: 3px solid var(--violet-500); }
+  .txn-coaching { border-left: 3px solid var(--emerald-500); }
+  .txn-personal { border-left: 3px solid var(--navy-300); }
+  .txn-review { border-left: 3px solid var(--amber-500); }
+
+  /* Status pills for quarterly */
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.3px;
+  }
+  .status-paid { background: var(--emerald-50); color: var(--emerald-600); }
+  .status-upcoming { background: var(--navy-50); color: var(--navy-500); }
+  .status-overdue { background: var(--amber-50); color: #b45309; }
+
+  .status-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    display: inline-block;
+  }
+  .status-paid .status-dot { background: var(--emerald-500); }
+  .status-upcoming .status-dot { background: var(--navy-400); }
+  .status-overdue .status-dot { background: var(--amber-500); }
+
+  /* Monthly CSS bar chart */
+  .bar-wrapper { display: flex; align-items: center; gap: 8px; }
+  .bar {
+    height: 8px; border-radius: 4px; min-width: 2px;
+    transition: width 0.4s ease;
+  }
+  .bar-income { background: linear-gradient(90deg, var(--emerald-500), var(--emerald-600)); }
+  .bar-expense { background: linear-gradient(90deg, var(--rose-500), #e11d48); }
 
   /* Account link */
-  .account-link { color:var(--blue-600); font-size:11px; text-decoration:none; }
-  .account-link:hover { text-decoration:underline; }
+  .account-link {
+    color: var(--navy-700); font-size: 11px; font-weight: 500;
+    text-decoration: none; padding: 2px 6px; border-radius: 4px;
+    background: var(--navy-50); transition: all 0.15s;
+  }
+  .account-link:hover { background: var(--navy-200); color: var(--navy-900); }
 
-  /* Totals row */
-  .total-row td { font-weight:700; color:var(--slate-900); border-top:2px solid var(--slate-900); border-bottom:none; padding-top:12px; }
+  /* Empty state */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+  }
+  .empty-state-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal-50), var(--violet-50));
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 28px; margin-bottom: 16px;
+  }
+  .empty-state-title {
+    font-size: 15px; font-weight: 700; color: var(--navy-800);
+    margin-bottom: 6px;
+  }
+  .empty-state-text {
+    font-size: 13px; color: var(--navy-400); max-width: 360px;
+    margin: 0 auto; line-height: 1.6;
+  }
 
-  /* Deduction rate */
-  .rate { color:var(--slate-500); font-size:11px; }
+  /* ============ FOOTER ============ */
+  .footer {
+    text-align: center; padding: 28px 20px;
+    font-size: 11px; color: var(--navy-400);
+    line-height: 1.8;
+  }
+  .footer-brand {
+    font-weight: 800; letter-spacing: 2px; color: var(--navy-300);
+    font-size: 12px;
+  }
+  .footer-cpa {
+    display: inline-block; margin-top: 6px;
+    padding: 4px 14px; border-radius: 20px;
+    background: var(--navy-50); border: 1px solid var(--navy-200);
+    font-weight: 600; color: var(--navy-500);
+  }
 
-  /* Footer */
-  .footer { text-align:center; padding:20px; font-size:11px; color:var(--slate-500); }
+  /* ============ LOADING ============ */
+  .loading {
+    text-align: center; padding: 80px 20px; color: var(--navy-400);
+  }
+  .spinner {
+    display: inline-block; width: 32px; height: 32px;
+    border: 3px solid var(--navy-200);
+    border-top-color: var(--teal-500);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    margin-bottom: 12px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; font-weight: 500; }
 
-  /* Loading */
-  .loading { text-align:center; padding:60px; color:var(--slate-500); }
-  .spinner { display:inline-block; width:24px; height:24px; border:3px solid var(--slate-300);
-             border-top-color:var(--slate-900); border-radius:50%; animation:spin 0.8s linear infinite; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-
-  /* Responsive */
-  @media(max-width:700px) {
-    .summary-bar { grid-template-columns:repeat(2,1fr); }
-    .header { flex-direction:column; gap:8px; }
-    .content, .summary-bar, .tabs { padding-left:16px; padding-right:16px; }
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 768px) {
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .stat-card { border-bottom: 1px solid var(--navy-100); }
+    .stat-card:nth-child(2) { border-right: none; }
+    .header-inner { flex-direction: column; gap: 12px; }
+    .header-meta { text-align: left; }
+    .content, .tabs-bar { padding-left: 20px; padding-right: 20px; }
+    .stat-card { padding: 18px 20px; }
+    .tab { padding: 12px 14px; font-size: 12px; }
+    .header { padding: 28px 24px 24px; }
+  }
+  @media (max-width: 480px) {
+    .stats-grid { grid-template-columns: 1fr; }
+    .stat-card { border-right: none; }
+    .container { padding: 12px 8px 32px; }
   }
 </style>
 </head>
 <body>
 
 <div class="container">
+  <!-- HEADER -->
   <div class="header">
-    <h1>VAULT</h1>
-    <div class="subtitle">
-      <div>Tax Year
-        <select id="year-select" style="background:#1e293b;color:#fff;border:1px solid #475569;border-radius:4px;padding:2px 6px;font-size:12px;cursor:pointer">
-          <option value="2026">2026</option>
-          <option value="2025" selected>2025</option>
-        </select>
+    <div class="header-inner">
+      <div>
+        <h1>VAULT</h1>
+        <div class="tagline">Tax Dashboard &middot; Real-Time</div>
+        <div class="year-toggle" id="year-toggle">
+          <button class="year-btn" data-year="2025">2025</button>
+          <button class="year-btn" data-year="2026">2026</button>
+        </div>
       </div>
-      <div>Marcos Matthews &bull; EIN 41-4275726</div>
-      <div style="margin-top:6px;font-size:10px;color:#64748b">Last updated: <span id="last-updated">Loading...</span></div>
+      <div class="header-meta">
+        <div class="owner">Marcos Matthews</div>
+        <div class="ein">Wryko LLC &middot; EIN 41-4275726</div>
+        <div class="updated">Last updated: <span id="last-updated">Loading...</span></div>
+      </div>
     </div>
   </div>
 
-  <div class="summary-bar" id="summary-bar">
-    <div class="summary-item"><div class="label">Gross Income</div><div class="value" id="s-income">--</div></div>
-    <div class="summary-item"><div class="label">Total Deductions</div><div class="value" id="s-deductions">--</div></div>
-    <div class="summary-item"><div class="label">Net Profit/Loss</div><div class="value" id="s-net">--</div></div>
-    <div class="summary-item"><div class="label">Est. Tax Liability</div><div class="value" id="s-tax">--</div></div>
+  <!-- STAT CARDS -->
+  <div class="stats-grid" id="summary-bar">
+    <div class="stat-card">
+      <div class="stat-icon">&#x2197;</div>
+      <div class="stat-label">Gross Income</div>
+      <div class="stat-value" id="s-income">--</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#x2198;</div>
+      <div class="stat-label">Total Deductions</div>
+      <div class="stat-value" id="s-deductions">--</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#x2261;</div>
+      <div class="stat-label">Net Profit / Loss</div>
+      <div class="stat-value" id="s-net">--</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">&#x25CE;</div>
+      <div class="stat-label">Est. Tax Liability</div>
+      <div class="stat-value" id="s-tax">--</div>
+    </div>
   </div>
 
-  <div class="tabs">
+  <!-- TABS -->
+  <div class="tabs-bar">
     <div class="tab active" data-tab="overview">Overview</div>
     <div class="tab" data-tab="schedule-c-wryko">Schedule C — Wryko</div>
     <div class="tab" data-tab="schedule-c-coaching">Schedule C — Coaching</div>
-    <div class="tab" data-tab="transactions">All Transactions</div>
+    <div class="tab" data-tab="transactions">Transactions<span class="tab-count" id="txn-count">0</span></div>
     <div class="tab" data-tab="quarterly">Quarterly</div>
   </div>
 
+  <!-- CONTENT -->
   <div class="content">
+
     <!-- OVERVIEW -->
     <div class="tab-panel active" id="panel-overview">
       <div class="section">
-        <div class="section-header">Combined Schedule C Summary</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Combined Schedule C Summary</div>
+        </div>
         <table>
           <thead><tr><th>Item</th><th>Wryko (Schedule C #1)</th><th>Coaching (Schedule C #2)</th></tr></thead>
           <tbody id="overview-table"></tbody>
         </table>
       </div>
       <div class="section">
-        <div class="section-header">Estimated Tax Calculation (Form 1040)</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Estimated Tax Calculation (Form 1040)</div>
+        </div>
         <table>
           <thead><tr><th>Line Item</th><th>Amount</th></tr></thead>
           <tbody id="tax-calc-table"></tbody>
         </table>
       </div>
       <div class="section">
-        <div class="section-header">Accounts Overview</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Accounts Overview</div>
+        </div>
         <table>
           <thead><tr><th>Account</th><th>Institution</th><th>Type</th><th>Balance</th></tr></thead>
           <tbody id="accounts-table"></tbody>
@@ -150,14 +498,20 @@
     <!-- SCHEDULE C WRYKO -->
     <div class="tab-panel" id="panel-schedule-c-wryko">
       <div class="section">
-        <div class="section-header">Wryko LLC — Schedule C Expense Detail</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Wryko LLC — Schedule C Expense Detail</div>
+        </div>
         <table>
           <thead><tr><th>Category</th><th>Deduction Rate</th><th>Gross Amount</th><th>Deductible Amount</th></tr></thead>
           <tbody id="wryko-expenses"></tbody>
         </table>
       </div>
       <div class="section">
-        <div class="section-header">Wryko — Transaction Detail (Audit Trail)</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Wryko — Transaction Detail (Audit Trail)</div>
+        </div>
         <table>
           <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
           <tbody id="wryko-transactions"></tbody>
@@ -168,14 +522,20 @@
     <!-- SCHEDULE C COACHING -->
     <div class="tab-panel" id="panel-schedule-c-coaching">
       <div class="section">
-        <div class="section-header">Soccer Coaching — Schedule C Detail</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Soccer Coaching — Schedule C Detail</div>
+        </div>
         <table>
           <thead><tr><th>Category</th><th>Deduction Rate</th><th>Gross Amount</th><th>Deductible Amount</th></tr></thead>
           <tbody id="coaching-expenses"></tbody>
         </table>
       </div>
       <div class="section">
-        <div class="section-header">Coaching — Transaction Detail (Audit Trail)</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Coaching — Transaction Detail (Audit Trail)</div>
+        </div>
         <table>
           <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
           <tbody id="coaching-transactions"></tbody>
@@ -186,13 +546,23 @@
     <!-- ALL TRANSACTIONS -->
     <div class="tab-panel" id="panel-transactions">
       <div class="section">
-        <div class="section-header">All Transactions — <span id="txn-year">2026</span> YTD</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">All Transactions — <span id="txn-year">2025</span> YTD</div>
+        </div>
         <table>
-          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Entity</th><th>Tax Category</th><th>Account</th><th>Amount</th></tr></thead>
+          <thead><tr><th style="width:4px;padding:0"></th><th>Date</th><th>Vendor</th><th>Description</th><th>Entity</th><th>Tax Category</th><th>Account</th><th>Amount</th></tr></thead>
           <tbody id="all-transactions"></tbody>
         </table>
-        <div id="no-transactions" style="display:none;text-align:center;padding:40px;color:#94a3b8">
-          No transactions recorded yet for this tax year. The intake agent runs every 6 hours to capture new transactions.
+        <div id="no-transactions" style="display:none">
+          <div class="empty-state">
+            <div class="empty-state-icon">&#x1F4CB;</div>
+            <div class="empty-state-title">No transactions yet</div>
+            <div class="empty-state-text">
+              The intake agent runs every 6 hours to capture new transactions.
+              Check back soon — your financial data will appear here automatically.
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -200,25 +570,37 @@
     <!-- QUARTERLY -->
     <div class="tab-panel" id="panel-quarterly">
       <div class="section">
-        <div class="section-header">Quarterly Estimated Tax Payments</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Quarterly Estimated Tax Payments</div>
+        </div>
         <table>
           <thead><tr><th>Quarter</th><th>Period</th><th>Due Date</th><th>Est. Payment</th><th>Status</th></tr></thead>
           <tbody id="quarterly-table"></tbody>
         </table>
       </div>
       <div class="section">
-        <div class="section-header">Monthly Spending Breakdown</div>
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Monthly Breakdown</div>
+        </div>
         <table>
-          <thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th></tr></thead>
+          <thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th><th style="width:30%">Visualization</th></tr></thead>
           <tbody id="monthly-table"></tbody>
         </table>
       </div>
     </div>
+
   </div>
 
+  <!-- FOOTER -->
   <div class="footer">
-    VAULT Tax Document &bull; Marcos Matthews &bull; Wryko LLC (EIN 41-4275726) &bull; Generated live from Supabase<br>
-    This document is for tax preparation purposes. Consult CPA Courtney Matthews before filing.
+    <div class="footer-brand">VAULT</div>
+    <div>Marcos Matthews &middot; Wryko LLC (EIN 41-4275726) &middot; Live data via Supabase</div>
+    <div class="footer-cpa">Prepared for CPA Courtney Matthews</div>
+    <div style="margin-top:8px;font-size:10px;color:var(--navy-300)">
+      This document is for tax preparation purposes. Consult your CPA before filing.
+    </div>
   </div>
 </div>
 
@@ -226,28 +608,36 @@
 const SUPABASE_URL = "https://mrqectaahvxvwegxhydz.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ycWVjdGFhaHZ4dndlZ3hoeWR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTU5NjcsImV4cCI6MjA4NDU5MTk2N30.1G3VRD_RlEEW2s4nSV7XnCiVDrTEu6Ahb-jrfCWIeUk";
 let YEAR = parseInt(new URLSearchParams(window.location.search).get("year") || "2025");
-document.getElementById("year-select").value = YEAR;
-document.getElementById("year-select").addEventListener("change", (e) => {
-  YEAR = parseInt(e.target.value);
+
+// Year toggle
+const yearBtns = document.querySelectorAll(".year-btn");
+function setActiveYear(y) {
+  YEAR = y;
+  yearBtns.forEach(b => b.classList.toggle("active", parseInt(b.dataset.year) === y));
   loadDashboard();
-});
+}
+yearBtns.forEach(b => b.addEventListener("click", () => setActiveYear(parseInt(b.dataset.year))));
+// Set initial
+yearBtns.forEach(b => { if (parseInt(b.dataset.year) === YEAR) b.classList.add("active"); });
 
 const headers = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
 const fmt = (n) => {
   if (n == null) return "$0.00";
   const v = parseFloat(n);
-  const s = Math.abs(v).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+  const s = Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return v < 0 ? `-$${s}` : `$${s}`;
 };
-const cls = (n) => parseFloat(n||0) >= 0 ? "amount positive" : "amount negative";
+const cls = (n) => parseFloat(n || 0) >= 0 ? "amount positive" : "amount negative";
 
-async function query(table, params="") {
+async function query(table, params = "") {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${params}`, { headers });
   return r.json();
 }
-async function rpc(fn, body={}) {
+async function rpc(fn, body = {}) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${fn}`, {
-    method:"POST", headers:{...headers,"Content-Type":"application/json"}, body:JSON.stringify(body)
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
   });
   return r.json();
 }
@@ -275,30 +665,49 @@ const DEDUCTION_RATES = {
 
 function entityBadge(e) {
   if (!e) return "";
-  const c = {wryko:"badge-wryko",coaching:"badge-coaching",personal:"badge-personal",split:"badge-review"};
-  return `<span class="badge ${c[e]||"badge-personal"}">${e}</span>`;
+  const map = {
+    wryko: "badge-wryko",
+    coaching: "badge-coaching",
+    personal: "badge-personal",
+    split: "badge-review",
+  };
+  return `<span class="badge ${map[e] || 'badge-personal'}">${e}</span>`;
+}
+
+function entityRowClass(e) {
+  const map = { wryko: "txn-wryko", coaching: "txn-coaching", personal: "txn-personal" };
+  return map[e] || "txn-review";
+}
+
+function emptyRow(cols, msg) {
+  return `<tr><td colspan="${cols}">
+    <div class="empty-state">
+      <div class="empty-state-icon">&#x1F4AD;</div>
+      <div class="empty-state-title">Nothing here yet</div>
+      <div class="empty-state-text">${msg}</div>
+    </div>
+  </td></tr>`;
 }
 
 async function loadDashboard() {
-  document.getElementById("tax-year").textContent = YEAR;
   document.getElementById("txn-year").textContent = YEAR;
   document.getElementById("last-updated").textContent = new Date().toLocaleString();
 
   // Fetch all data in parallel
   const [wrykoTotals, coachingTotals, taxLedger, transactions, accounts, needsReview] = await Promise.all([
-    rpc("vault_schedule_c_wryko", {target_year: YEAR}),
-    rpc("vault_schedule_c_coaching", {target_year: YEAR}),
+    rpc("vault_schedule_c_wryko", { target_year: YEAR }),
+    rpc("vault_schedule_c_coaching", { target_year: YEAR }),
     rpc("vault_ytd_tax_ledger"),
     query("pf_transactions", `tax_year=eq.${YEAR}&order=date.desc`),
     query("pf_accounts", "order=type,name"),
     rpc("vault_needs_review"),
   ]);
 
-  const w = Array.isArray(wrykoTotals) ? wrykoTotals[0]||{} : wrykoTotals||{};
-  const c = Array.isArray(coachingTotals) ? coachingTotals[0]||{} : coachingTotals||{};
+  const w = Array.isArray(wrykoTotals) ? wrykoTotals[0] || {} : wrykoTotals || {};
+  const c = Array.isArray(coachingTotals) ? coachingTotals[0] || {} : coachingTotals || {};
 
-  const totalIncome = parseFloat(w.gross_receipts||0) + parseFloat(c.gross_receipts||0);
-  const totalExpenses = parseFloat(w.total_expenses||0) + parseFloat(c.total_expenses||0);
+  const totalIncome = parseFloat(w.gross_receipts || 0) + parseFloat(c.gross_receipts || 0);
+  const totalExpenses = parseFloat(w.total_expenses || 0) + parseFloat(c.total_expenses || 0);
   const netPL = totalIncome - totalExpenses;
   const seTax = netPL > 0 ? netPL * 0.153 : 0;
   const halfSE = seTax / 2;
@@ -309,18 +718,18 @@ async function loadDashboard() {
 
   // Summary bar
   document.getElementById("s-income").textContent = fmt(totalIncome);
-  document.getElementById("s-income").className = "value positive";
+  document.getElementById("s-income").className = "stat-value positive";
   document.getElementById("s-deductions").textContent = fmt(-totalExpenses);
-  document.getElementById("s-deductions").className = "value negative";
+  document.getElementById("s-deductions").className = "stat-value negative";
   document.getElementById("s-net").textContent = fmt(netPL);
-  document.getElementById("s-net").className = `value ${netPL >= 0 ? "positive" : "negative"}`;
+  document.getElementById("s-net").className = `stat-value ${netPL >= 0 ? "positive" : "negative"}`;
   document.getElementById("s-tax").textContent = fmt(totalTax);
-  document.getElementById("s-tax").className = "value negative";
+  document.getElementById("s-tax").className = "stat-value negative";
 
   // Overview table
   document.getElementById("overview-table").innerHTML = `
     <tr><td>Gross Revenue</td><td class="${cls(w.gross_receipts)}">${fmt(w.gross_receipts)}</td><td class="${cls(c.gross_receipts)}">${fmt(c.gross_receipts)}</td></tr>
-    <tr><td>Total Expenses</td><td class="amount negative">${fmt(-parseFloat(w.total_expenses||0))}</td><td class="amount negative">${fmt(-parseFloat(c.total_expenses||0))}</td></tr>
+    <tr><td>Total Expenses</td><td class="amount negative">${fmt(-parseFloat(w.total_expenses || 0))}</td><td class="amount negative">${fmt(-parseFloat(c.total_expenses || 0))}</td></tr>
     <tr class="total-row"><td>Net Profit / (Loss)</td><td class="${cls(w.net_profit_loss)}">${fmt(w.net_profit_loss)}</td><td class="${cls(c.net_profit_loss)}">${fmt(c.net_profit_loss)}</td></tr>
   `;
 
@@ -337,10 +746,16 @@ async function loadDashboard() {
   `;
 
   // Accounts
-  document.getElementById("accounts-table").innerHTML = accounts.map(a =>
-    `<tr><td>${a.name}</td><td>${a.institution||""}</td><td style="text-transform:capitalize">${(a.type||"").replace("_"," ")}</td>
-     <td class="${cls(a.current_balance)}">${fmt(a.current_balance)}</td></tr>`
-  ).join("");
+  const accts = Array.isArray(accounts) ? accounts : [];
+  if (accts.length) {
+    document.getElementById("accounts-table").innerHTML = accts.map(a =>
+      `<tr><td style="font-weight:600">${a.name}</td><td>${a.institution || ""}</td>
+       <td><span class="badge badge-personal" style="text-transform:capitalize">${(a.type || "").replace("_", " ")}</span></td>
+       <td class="${cls(a.current_balance)}">${fmt(a.current_balance)}</td></tr>`
+    ).join("");
+  } else {
+    document.getElementById("accounts-table").innerHTML = emptyRow(4, "No accounts linked yet.");
+  }
 
   // Group transactions by entity for Schedule C tabs
   const ledger = Array.isArray(taxLedger) ? taxLedger : [];
@@ -348,12 +763,16 @@ async function loadDashboard() {
   const coachingLedger = ledger.filter(r => r.schedule_c_entity === "coaching");
 
   function renderLedger(rows, el) {
-    if (!rows.length) { el.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:30px">No transactions yet for this entity</td></tr>'; return; }
+    if (!rows.length) {
+      el.innerHTML = emptyRow(4, "No transactions recorded for this entity yet.");
+      return;
+    }
     let total = 0;
     el.innerHTML = rows.map(r => {
       const info = DEDUCTION_RATES[r.tax_category] || { rate: "100%", label: "Deductible" };
-      total += parseFloat(r.deductible_total||0);
-      return `<tr><td>${r.tax_category||""}</td><td><span class="rate">${info.rate}</span> ${info.label}</td>
+      total += parseFloat(r.deductible_total || 0);
+      return `<tr><td style="font-weight:500">${r.tax_category || ""}</td>
+              <td><span class="rate">${info.rate}</span> <span style="color:var(--navy-500);font-size:11px">${info.label}</span></td>
               <td class="amount">${fmt(r.total)}</td><td class="amount">${fmt(r.deductible_total)}</td></tr>`;
     }).join("") + `<tr class="total-row"><td>Total</td><td></td><td></td><td class="amount">${fmt(total)}</td></tr>`;
   }
@@ -366,67 +785,106 @@ async function loadDashboard() {
   const coachingTxns = txns.filter(t => t.schedule_c_entity === "coaching");
 
   function renderTxns(rows, el) {
-    if (!rows.length) { el.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:30px">No transactions recorded</td></tr>'; return; }
+    if (!rows.length) {
+      el.innerHTML = emptyRow(5, "No transactions recorded yet.");
+      return;
+    }
     el.innerHTML = rows.map(t =>
-      `<tr><td style="white-space:nowrap">${t.date||""}</td><td>${t.vendor||""}</td><td>${t.description||""}</td>
-       <td><span class="account-link">${t.account||"unknown"}</span></td>
-       <td class="${cls(t.type==="income"?t.amount:-t.amount)}">${t.type==="income"?"":"-"}${fmt(t.amount)}</td></tr>`
+      `<tr><td style="white-space:nowrap;font-variant-numeric:tabular-nums">${t.date || ""}</td>
+       <td style="font-weight:500">${t.vendor || ""}</td><td>${t.description || ""}</td>
+       <td><span class="account-link">${t.account || "unknown"}</span></td>
+       <td class="${cls(t.type === 'income' ? t.amount : -t.amount)}">${t.type === "income" ? "" : "-"}${fmt(t.amount)}</td></tr>`
     ).join("");
   }
   renderTxns(wrykoTxns, document.getElementById("wryko-transactions"));
   renderTxns(coachingTxns, document.getElementById("coaching-transactions"));
 
   // All transactions
+  document.getElementById("txn-count").textContent = txns.length;
   if (!txns.length) {
     document.getElementById("no-transactions").style.display = "block";
+    document.getElementById("all-transactions").innerHTML = "";
   } else {
+    document.getElementById("no-transactions").style.display = "none";
     document.getElementById("all-transactions").innerHTML = txns.map(t =>
-      `<tr><td style="white-space:nowrap">${t.date||""}</td><td>${t.vendor||""}</td><td>${t.description||""}</td>
+      `<tr>
+       <td style="width:4px;padding:0;border-bottom:none"><div class="${entityRowClass(t.schedule_c_entity)}" style="width:4px;height:100%;min-height:40px"></div></td>
+       <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${t.date || ""}</td>
+       <td style="font-weight:500">${t.vendor || ""}</td><td>${t.description || ""}</td>
        <td>${entityBadge(t.schedule_c_entity)}</td>
-       <td><span class="rate">${(DEDUCTION_RATES[t.tax_category]||{}).rate||""}</span> ${t.tax_category||""}</td>
-       <td><span class="account-link">${t.account||"unknown"}</span></td>
-       <td class="${cls(t.type==="income"?t.amount:-t.amount)}">${t.type==="income"?"":"-"}${fmt(t.amount)}</td></tr>`
+       <td><span class="rate">${(DEDUCTION_RATES[t.tax_category] || {}).rate || ""}</span> <span style="font-size:11px;color:var(--navy-500)">${t.tax_category || ""}</span></td>
+       <td><span class="account-link">${t.account || "unknown"}</span></td>
+       <td class="${cls(t.type === 'income' ? t.amount : -t.amount)}">${t.type === "income" ? "" : "-"}${fmt(t.amount)}</td></tr>`
     ).join("");
   }
 
   // Quarterly estimates
   const qtrPayment = totalTax > 0 ? totalTax / 4 : 0;
   const quarters = [
-    { q:"Q1", period:"Jan-Mar", due:`Apr 15, ${YEAR}` },
-    { q:"Q2", period:"Apr-May", due:`Jun 15, ${YEAR}` },
-    { q:"Q3", period:"Jun-Aug", due:`Sep 15, ${YEAR}` },
-    { q:"Q4", period:"Sep-Dec", due:`Jan 15, ${YEAR+1}` },
+    { q: "Q1", period: "Jan - Mar", due: `Apr 15, ${YEAR}` },
+    { q: "Q2", period: "Apr - May", due: `Jun 15, ${YEAR}` },
+    { q: "Q3", period: "Jun - Aug", due: `Sep 15, ${YEAR}` },
+    { q: "Q4", period: "Sep - Dec", due: `Jan 15, ${YEAR + 1}` },
   ];
   const today = new Date();
   document.getElementById("quarterly-table").innerHTML = quarters.map(q => {
     const dueDate = new Date(q.due);
     const isPast = today > dueDate;
-    const status = isPast ? '<span style="color:#dc2626;font-weight:600">DUE</span>' : '<span style="color:#94a3b8">Upcoming</span>';
-    return `<tr><td style="font-weight:600">${q.q}</td><td>${q.period}</td><td>${q.due}</td>
-            <td class="amount">${fmt(qtrPayment)}</td><td>${status}</td></tr>`;
+    let statusClass, statusLabel;
+    if (isPast) {
+      statusClass = "status-overdue";
+      statusLabel = "Overdue";
+    } else {
+      statusClass = "status-upcoming";
+      statusLabel = "Upcoming";
+    }
+    return `<tr>
+      <td style="font-weight:700;font-size:14px">${q.q}</td>
+      <td>${q.period}</td>
+      <td style="font-variant-numeric:tabular-nums">${q.due}</td>
+      <td class="amount">${fmt(qtrPayment)}</td>
+      <td><span class="status-pill ${statusClass}"><span class="status-dot"></span>${statusLabel}</span></td>
+    </tr>`;
   }).join("") + `<tr class="total-row"><td>Total Annual</td><td></td><td></td><td class="amount">${fmt(totalTax)}</td><td></td></tr>`;
 
-  // Monthly breakdown (from transactions)
+  // Monthly breakdown (from transactions) with bar chart
   const months = {};
+  let maxVal = 0;
   txns.forEach(t => {
-    const m = t.date ? t.date.substring(0,7) : "unknown";
-    if (!months[m]) months[m] = {income:0, expenses:0};
-    if (t.type === "income") months[m].income += parseFloat(t.amount||0);
-    else months[m].expenses += parseFloat(t.amount||0);
+    const m = t.date ? t.date.substring(0, 7) : "unknown";
+    if (!months[m]) months[m] = { income: 0, expenses: 0 };
+    if (t.type === "income") months[m].income += parseFloat(t.amount || 0);
+    else months[m].expenses += parseFloat(t.amount || 0);
   });
-  const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+  Object.values(months).forEach(d => {
+    if (d.income > maxVal) maxVal = d.income;
+    if (d.expenses > maxVal) maxVal = d.expenses;
+  });
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const sortedMonths = Object.keys(months).sort();
   if (sortedMonths.length) {
     document.getElementById("monthly-table").innerHTML = sortedMonths.map(m => {
       const d = months[m];
       const net = d.income - d.expenses;
-      const [y,mo] = m.split("-");
-      const label = `${monthNames[parseInt(mo)-1]||mo} ${y}`;
-      return `<tr><td>${label}</td><td class="amount positive">${fmt(d.income)}</td>
-              <td class="amount negative">${fmt(-d.expenses)}</td><td class="${cls(net)}">${fmt(net)}</td></tr>`;
+      const [y, mo] = m.split("-");
+      const label = `${monthNames[parseInt(mo) - 1] || mo} ${y}`;
+      const incPct = maxVal > 0 ? (d.income / maxVal * 100) : 0;
+      const expPct = maxVal > 0 ? (d.expenses / maxVal * 100) : 0;
+      return `<tr><td style="font-weight:600">${label}</td>
+              <td class="amount positive">${fmt(d.income)}</td>
+              <td class="amount negative">${fmt(-d.expenses)}</td>
+              <td class="${cls(net)}">${fmt(net)}</td>
+              <td>
+                <div class="bar-wrapper">
+                  <div class="bar bar-income" style="width:${incPct}%"></div>
+                </div>
+                <div class="bar-wrapper" style="margin-top:3px">
+                  <div class="bar bar-expense" style="width:${expPct}%"></div>
+                </div>
+              </td></tr>`;
     }).join("");
   } else {
-    document.getElementById("monthly-table").innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:30px">No monthly data yet</td></tr>';
+    document.getElementById("monthly-table").innerHTML = emptyRow(5, "Monthly data will populate as transactions are recorded.");
   }
 }
 

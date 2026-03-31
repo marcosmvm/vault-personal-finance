@@ -47,7 +47,7 @@ TAX_DASHBOARD_URL = "https://marcosmvm.github.io/vault-personal-finance/"
 
 
 def _wrap_html(subject: str, body_text: str) -> str:
-    """Wrap plain text body in a professional HTML email template."""
+    """Wrap plain text body in a stunning fintech-style HTML email template."""
     lines = body_text.split("\n")
     html_lines = []
     in_bullet_list = False
@@ -61,118 +61,157 @@ def _wrap_html(subject: str, body_text: str) -> str:
         # Close open list if switching away from bullets
         if in_bullet_list and not is_bullet:
             html_lines.append("</table>")
+            html_lines.append("</td></tr></table>")
             in_bullet_list = False
 
         if not stripped:
-            html_lines.append('<div style="height:10px"></div>')
+            html_lines.append('<div style="height:12px"></div>')
 
         elif stripped.startswith("━") or stripped.startswith("---"):
-            html_lines.append('<hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0">')
+            html_lines.append(
+                '<table width="100%" cellpadding="0" cellspacing="0" style="margin:18px 0">'
+                '<tr><td style="height:1px;background:linear-gradient(90deg,#06b6d4 0%,#8b5cf6 50%,transparent 100%);'
+                'opacity:0.3"></td></tr></table>'
+            )
 
         elif stripped.startswith(("⚡", "⚠")):
-            # Professional muted alert — not full red
+            # Warm amber notification card -- professional, not alarming
             html_lines.append(
-                f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0"><tr>'
-                f'<td style="background:#fafafa;border-left:3px solid #94a3b8;padding:10px 14px;'
-                f'border-radius:0 4px 4px 0;font-size:13px;color:#334155;line-height:1.5">'
-                f'{stripped}</td></tr></table>'
+                f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:10px 0">'
+                f'<tr><td style="background:#fffbeb;border-left:4px solid #f59e0b;'
+                f'border-radius:0 8px 8px 0;padding:14px 18px;'
+                f'box-shadow:0 1px 3px rgba(245,158,11,0.1)">'
+                f'<div style="font-size:13px;color:#92400e;line-height:1.6;font-weight:500">'
+                f'{stripped}</div>'
+                f'</td></tr></table>'
             )
 
         elif is_bullet:
             content = stripped[2:]
             if not in_bullet_list:
+                # Bullet list wrapper with subtle left accent
                 html_lines.append(
-                    '<table width="100%" cellpadding="0" cellspacing="0" '
-                    'style="margin:4px 0 4px 4px">'
+                    '<table width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0">'
+                    '<tr><td style="border-left:3px solid #06b6d4;padding-left:16px;border-radius:0 4px 4px 0">'
+                    '<table width="100%" cellpadding="0" cellspacing="0">'
                 )
                 in_bullet_list = True
             # Split on " — " or " - " for two-column layout
             if " — " in content:
                 left, right = content.split(" — ", 1)
                 html_lines.append(
-                    f'<tr><td width="16" valign="top" style="padding:3px 0;color:#64748b;'
-                    f'font-size:13px">&#x2022;</td>'
-                    f'<td style="padding:3px 0;font-size:13px;color:#1e293b;font-weight:500">'
+                    f'<tr>'
+                    f'<td width="16" valign="top" style="padding:5px 0;color:#8b5cf6;'
+                    f'font-size:14px;font-weight:bold">&#x2022;</td>'
+                    f'<td style="padding:5px 0;font-size:13px;color:#1e293b;font-weight:600">'
                     f'{left}</td>'
-                    f'<td align="right" style="padding:3px 0;font-size:13px;color:#64748b">'
+                    f'<td align="right" style="padding:5px 0;font-size:13px;color:#64748b;'
+                    f'font-variant-numeric:tabular-nums">'
                     f'{right}</td></tr>'
                 )
             else:
                 html_lines.append(
-                    f'<tr><td width="16" valign="top" style="padding:3px 0;color:#64748b;'
-                    f'font-size:13px">&#x2022;</td>'
-                    f'<td colspan="2" style="padding:3px 0;font-size:13px;color:#334155;'
-                    f'line-height:1.5">{content}</td></tr>'
+                    f'<tr>'
+                    f'<td width="16" valign="top" style="padding:5px 0;color:#8b5cf6;'
+                    f'font-size:14px;font-weight:bold">&#x2022;</td>'
+                    f'<td colspan="2" style="padding:5px 0;font-size:13px;color:#334155;'
+                    f'line-height:1.7">{content}</td></tr>'
                 )
 
         elif stripped.isupper() and len(stripped) > 3:
-            # Section header
+            # Section header -- pill-style accent bar
             html_lines.append(
-                f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:20px 0 10px">'
-                f'<tr><td style="font-size:12px;font-weight:700;text-transform:uppercase;'
-                f'letter-spacing:1px;color:#0f172a;padding-bottom:6px;'
-                f'border-bottom:2px solid #0f172a">{stripped}</td></tr></table>'
+                f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:24px 0 12px">'
+                f'<tr>'
+                f'<td width="4" style="background:linear-gradient(180deg,#06b6d4,#8b5cf6);'
+                f'border-radius:4px"></td>'
+                f'<td style="padding-left:12px">'
+                f'<div style="font-size:11px;font-weight:800;text-transform:uppercase;'
+                f'letter-spacing:1.5px;color:#0f172a">{stripped}</div>'
+                f'</td></tr></table>'
             )
 
         elif stripped.endswith(":") and len(stripped) < 60:
             html_lines.append(
                 f'<div style="font-weight:600;color:#1e293b;font-size:13px;'
-                f'margin-top:10px">{stripped}</div>'
+                f'margin-top:12px;margin-bottom:2px">{stripped}</div>'
             )
 
         else:
             html_lines.append(
-                f'<div style="font-size:13px;color:#334155;line-height:1.7">{stripped}</div>'
+                f'<div style="font-size:13px;color:#475569;line-height:1.75">{stripped}</div>'
             )
 
     if in_bullet_list:
         html_lines.append("</table>")
+        html_lines.append("</td></tr></table>")
 
     body_html = "\n".join(html_lines)
 
     return f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f1f5f9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:32px 0">
+<body style="margin:0;padding:0;background:#f0f1f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f1f5;padding:40px 0">
 <tr><td align="center">
-<table width="640" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08)">
+<table width="640" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08),0 1px 3px rgba(15,23,42,0.04)">
 
-  <!-- Header -->
-  <tr><td style="background:#0f172a;padding:20px 32px">
-    <table width="100%"><tr>
-      <td style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:1px">VAULT</td>
-      <td align="right" style="color:#94a3b8;font-size:11px;letter-spacing:0.3px">PERSONAL FINANCE INTELLIGENCE</td>
-    </tr></table>
+  <!-- Header with gradient -->
+  <tr><td style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 60%,#1e293b 100%);padding:0">
+    <!-- Thin accent stripe at top -->
+    <div style="height:4px;background:linear-gradient(90deg,#06b6d4,#8b5cf6,#06b6d4)"></div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 36px 20px">
+      <tr>
+        <td>
+          <div style="font-size:26px;font-weight:800;letter-spacing:3px;color:#ffffff">VAULT</div>
+          <div style="font-size:10px;letter-spacing:2px;color:#06b6d4;text-transform:uppercase;margin-top:2px;font-weight:600">Personal Finance Intelligence</div>
+        </td>
+        <td align="right" style="vertical-align:top">
+          <div style="display:inline-block;background:rgba(6,182,212,0.12);border:1px solid rgba(6,182,212,0.2);border-radius:20px;padding:4px 14px">
+            <span style="font-size:10px;color:#67e8f9;letter-spacing:0.5px;font-weight:600">AUTOMATED REPORT</span>
+          </div>
+        </td>
+      </tr>
+    </table>
   </td></tr>
 
   <!-- Subject line -->
-  <tr><td style="padding:24px 32px 4px">
-    <div style="font-size:17px;font-weight:700;color:#0f172a">{subject}</div>
-    <div style="font-size:11px;color:#94a3b8;margin-top:4px">Prepared for Marcos Matthews</div>
+  <tr><td style="padding:28px 36px 6px">
+    <div style="font-size:18px;font-weight:700;color:#0f172a;letter-spacing:-0.2px">{subject}</div>
+    <div style="font-size:11px;color:#94a3b8;margin-top:6px;font-weight:500">Prepared for Marcos Matthews</div>
   </td></tr>
 
   <!-- Body -->
-  <tr><td style="padding:12px 32px 24px">
+  <tr><td style="padding:14px 36px 28px">
     {body_html}
   </td></tr>
 
-  <!-- Tax Dashboard Link -->
-  <tr><td style="padding:0 32px 24px">
+  <!-- Tax Dashboard CTA Button -->
+  <tr><td style="padding:0 36px 32px">
     <table width="100%" cellpadding="0" cellspacing="0">
-      <tr><td style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:14px 16px;text-align:center">
-        <a href="{TAX_DASHBOARD_URL}" style="color:#0f172a;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:0.3px">View Tax Dashboard &rarr;</a>
-        <div style="font-size:11px;color:#94a3b8;margin-top:4px">Monthly &bull; Quarterly &bull; Annual &bull; Audit-Ready</div>
+      <tr><td align="center" style="padding:0">
+        <table cellpadding="0" cellspacing="0">
+          <tr><td align="center" style="border-radius:12px;background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);box-shadow:0 4px 14px rgba(15,23,42,0.2),0 0 0 1px rgba(6,182,212,0.15)">
+            <a href="{TAX_DASHBOARD_URL}" target="_blank" style="display:inline-block;padding:14px 36px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+              View Tax Dashboard
+              <span style="color:#06b6d4;margin-left:6px">&rarr;</span>
+            </a>
+          </td></tr>
+        </table>
+        <div style="font-size:10px;color:#94a3b8;margin-top:10px;letter-spacing:0.3px">Monthly &#183; Quarterly &#183; Annual &#183; Audit-Ready</div>
       </td></tr>
     </table>
   </td></tr>
 
   <!-- Footer -->
-  <tr><td style="background:#f8fafc;padding:16px 32px;border-top:1px solid #e2e8f0">
-    <table width="100%"><tr>
-      <td style="font-size:10px;color:#94a3b8">VAULT v1.0 &bull; Autonomous Agent</td>
-      <td align="right" style="font-size:10px;color:#94a3b8">Powered by Claude AI</td>
-    </tr></table>
+  <tr><td style="padding:0">
+    <div style="height:1px;background:linear-gradient(90deg,transparent,#e2e8f0,transparent)"></div>
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:18px 36px">
+      <tr>
+        <td style="font-size:10px;color:#94a3b8;letter-spacing:0.3px">VAULT v2.0</td>
+        <td align="right" style="font-size:10px;color:#94a3b8;letter-spacing:0.3px">Powered by Claude AI</td>
+      </tr>
+    </table>
   </td></tr>
 
 </table>
