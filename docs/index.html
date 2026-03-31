@@ -655,14 +655,14 @@ document.querySelectorAll(".tab").forEach(tab => {
 });
 
 const DEDUCTION_RATES = {
-  wryko_expense: { rate: "100%", label: "Fully Deductible" },
-  coaching_expense: { rate: "100%", label: "Fully Deductible" },
-  business_income_wryko: { rate: "N/A", label: "Income" },
-  business_income_coaching: { rate: "N/A", label: "Income" },
-  home_office: { rate: "Partial", label: "Business Use %" },
-  vehicle_mileage: { rate: "$0.70/mi", label: "Standard Mileage" },
-  personal: { rate: "0%", label: "Not Deductible" },
-  needs_review: { rate: "TBD", label: "Needs Review" },
+  wryko_expense:           { rate: "100%",     label: "Wryko Business Expense",    display: "Wryko Expense" },
+  coaching_expense:        { rate: "100%",     label: "Coaching Business Expense",  display: "Coaching Expense" },
+  business_income_wryko:   { rate: "N/A",      label: "Wryko Revenue",             display: "Wryko Income" },
+  business_income_coaching:{ rate: "N/A",      label: "Coaching Revenue",           display: "Coaching Income" },
+  home_office:             { rate: "Partial",  label: "Business Use Percentage",    display: "Home Office" },
+  vehicle_mileage:         { rate: "$0.70/mi", label: "IRS Standard Mileage Rate",  display: "Vehicle / Mileage" },
+  personal:                { rate: "0%",       label: "Not Deductible",             display: "Personal" },
+  needs_review:            { rate: "TBD",      label: "Pending Classification",     display: "Needs Review" },
 };
 
 function accountLink(name) {
@@ -797,7 +797,7 @@ async function loadDashboard() {
     el.innerHTML = rows.map(r => {
       const info = DEDUCTION_RATES[r.tax_category] || { rate: "100%", label: "Deductible" };
       total += parseFloat(r.deductible_total || 0);
-      return `<tr><td style="font-weight:500">${r.tax_category || ""}</td>
+      return `<tr><td style="font-weight:500">${info.display || r.tax_category || ""}</td>
               <td><span class="rate">${info.rate}</span> <span style="color:var(--text-muted);font-size:11px">${info.label}</span></td>
               <td class="amount">${fmt(r.total)}</td><td class="amount">${fmt(r.deductible_total)}</td></tr>`;
     }).join("") + `<tr class="total-row"><td>Total</td><td></td><td></td><td class="amount">${fmt(total)}</td></tr>`;
@@ -838,7 +838,7 @@ async function loadDashboard() {
        <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${t.date || ""}</td>
        <td style="font-weight:500">${t.vendor || ""}</td><td>${t.description || ""}</td>
        <td>${entityBadge(t.schedule_c_entity)}</td>
-       <td><span class="rate">${(DEDUCTION_RATES[t.tax_category] || {}).rate || ""}</span> <span style="font-size:11px;color:var(--text-muted)">${t.tax_category || ""}</span></td>
+       <td><span class="rate">${(DEDUCTION_RATES[t.tax_category] || {}).rate || ""}</span> <span style="font-size:11px;color:var(--text-secondary)">${(DEDUCTION_RATES[t.tax_category] || {}).display || t.tax_category || ""}</span></td>
        <td>${accountLink(t.account)}</td>
        <td class="${cls(t.type === 'income' ? t.amount : -t.amount)}">${t.type === "income" ? "" : "-"}${fmt(t.amount)}</td></tr>`
     ).join("");
