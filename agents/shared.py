@@ -151,24 +151,24 @@ def _wrap_html(subject: str, body_text: str) -> str:
     return f"""<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f0f1f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f1f5;padding:40px 0">
+<body style="margin:0;padding:0;background:#f5f5f2;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',sans-serif">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f2;padding:40px 0">
 <tr><td align="center">
 <table width="640" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(15,23,42,0.08),0 1px 3px rgba(15,23,42,0.04)">
 
-  <!-- Header with gradient -->
-  <tr><td style="background:linear-gradient(135deg,#1a1a2e 0%,#2d1f3d 60%,#1a1a2e 100%);padding:0">
-    <!-- Thin accent stripe at top -->
-    <div style="height:4px;background:linear-gradient(90deg,#d4a574,#e8c99b,#d4a574)"></div>
+  <!-- Header with light design -->
+  <tr><td style="background:#ffffff;padding:0">
+    <!-- Vibrant gradient stripe at top -->
+    <div style="height:5px;background:linear-gradient(90deg,#d4a574,#e8956a,#d4a574)"></div>
     <table width="100%" cellpadding="0" cellspacing="0" style="padding:24px 36px 20px">
       <tr>
         <td>
-          <div style="font-size:26px;font-weight:800;letter-spacing:3px;color:#ffffff">VAULT</div>
+          <div style="font-size:26px;font-weight:800;letter-spacing:3px;color:#0f172a">VAULT</div>
           <div style="font-size:10px;letter-spacing:2px;color:#d4a574;text-transform:uppercase;margin-top:2px;font-weight:600">Personal Finance Intelligence</div>
         </td>
         <td align="right" style="vertical-align:top">
-          <div style="display:inline-block;background:rgba(212,165,116,0.12);border:1px solid rgba(212,165,116,0.25);border-radius:20px;padding:4px 14px">
-            <span style="font-size:10px;color:#e8c99b;letter-spacing:0.5px;font-weight:600">AUTOMATED REPORT</span>
+          <div style="display:inline-block;background:rgba(212,165,116,0.08);border:1px solid rgba(212,165,116,0.2);border-radius:20px;padding:4px 14px">
+            <span style="font-size:10px;color:#b8860b;letter-spacing:0.5px;font-weight:600">AUTOMATED REPORT</span>
           </div>
         </td>
       </tr>
@@ -191,10 +191,10 @@ def _wrap_html(subject: str, body_text: str) -> str:
     <table width="100%" cellpadding="0" cellspacing="0">
       <tr><td align="center" style="padding:0">
         <table cellpadding="0" cellspacing="0">
-          <tr><td align="center" style="border-radius:12px;background:linear-gradient(135deg,#1a1a2e 0%,#2d1f3d 100%);box-shadow:0 4px 14px rgba(15,23,42,0.2),0 0 0 1px rgba(212,165,116,0.15)">
+          <tr><td align="center" style="border-radius:12px;background:linear-gradient(135deg,#d4a574 0%,#e8956a 100%);box-shadow:0 4px 14px rgba(212,165,116,0.3),0 2px 6px rgba(232,149,106,0.2)">
             <a href="{TAX_DASHBOARD_URL}" target="_blank" style="display:inline-block;padding:14px 36px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
               View Tax Dashboard
-              <span style="color:#d4a574;margin-left:6px">&rarr;</span>
+              <span style="color:#ffffff;margin-left:6px">&rarr;</span>
             </a>
           </td></tr>
         </table>
