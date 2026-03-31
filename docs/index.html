@@ -404,7 +404,141 @@
     .stat-card { border-right: none; }
     .container { padding: 12px 8px 32px; }
   }
+  /* ============ CHART CONTAINERS ============ */
+  .chart-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    margin-bottom: 32px;
+  }
+  .chart-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .chart-card-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px;
+  }
+  .chart-card canvas { max-height: 260px; }
+
+  /* ============ CATEGORY GROUPS ============ */
+  .category-group {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-sm);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .category-group-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--table-header-bg);
+    cursor: pointer;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .category-group-header:hover { background: var(--hover-warm); }
+  .category-group-left {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .category-group-icon {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; background: rgba(96,165,250,0.08);
+  }
+  .category-group-name {
+    font-size: 13px; font-weight: 700; color: var(--text-primary);
+  }
+  .category-group-count {
+    font-size: 11px; color: var(--text-muted); font-weight: 500;
+  }
+  .category-group-totals {
+    display: flex; gap: 24px; align-items: center;
+  }
+  .category-group-total {
+    text-align: right;
+  }
+  .category-group-total-label {
+    font-size: 9px; text-transform: uppercase; letter-spacing: 0.8px;
+    color: var(--text-muted); font-weight: 600;
+  }
+  .category-group-total-value {
+    font-size: 14px; font-weight: 700; font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+  .category-group-arrow {
+    font-size: 10px; color: var(--text-muted); transition: transform 0.2s;
+    margin-left: 12px;
+  }
+  .category-group.open .category-group-arrow { transform: rotate(180deg); }
+  .category-group-items {
+    max-height: 0; overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .category-group.open .category-group-items {
+    max-height: 2000px;
+  }
+  .category-group-items table { margin: 0; }
+  .category-group-items thead th {
+    font-size: 9px; padding: 8px 14px;
+  }
+  .category-group-items tbody td {
+    font-size: 12px; padding: 9px 14px;
+  }
+  .writeoff-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 600; font-variant-numeric: tabular-nums;
+  }
+  .writeoff-full { background: var(--emerald-100); color: var(--emerald-dark); }
+  .writeoff-partial { background: var(--amber-100); color: var(--amber-dark); }
+  .writeoff-none { background: var(--slate-100); color: var(--slate-dark); }
+
+  /* ============ SEARCH / FILTER BAR ============ */
+  .filter-bar {
+    display: flex; gap: 10px; align-items: center;
+    margin-bottom: 16px; flex-wrap: wrap;
+  }
+  .filter-input {
+    flex: 1; min-width: 200px;
+    padding: 9px 14px 9px 36px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 13px;
+    color: var(--text-primary);
+    background: var(--white) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%2394a3b8' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85zm-5.242.156a5 5 0 1 1 0-10 5 5 0 0 1 0 10z'/%3E%3C/svg%3E") no-repeat 12px center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  .filter-input:focus {
+    border-color: #60a5fa;
+    box-shadow: 0 0 0 3px rgba(96,165,250,0.12);
+  }
+  .filter-input::placeholder { color: var(--text-muted); }
+  .filter-select {
+    padding: 9px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-family: inherit; font-size: 12px; font-weight: 600;
+    color: var(--text-secondary);
+    background: var(--white);
+    cursor: pointer; outline: none;
+    transition: border-color 0.15s;
+  }
+  .filter-select:focus { border-color: #60a5fa; }
+  .filter-count {
+    font-size: 12px; color: var(--text-muted); font-weight: 500;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .chart-row { grid-template-columns: 1fr; }
+    .category-group-totals { gap: 12px; }
+    .filter-bar { flex-direction: column; }
+    .filter-input { min-width: 100%; }
+  }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
 <body>
 
@@ -432,22 +566,22 @@
   <div class="stats-grid" id="summary-bar">
     <div class="stat-card">
       <div class="stat-icon">&#x2197;</div>
-      <div class="stat-label">Gross Income</div>
+      <div class="stat-label" id="s-income-label">Gross Income</div>
       <div class="stat-value" id="s-income">--</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon">&#x2198;</div>
-      <div class="stat-label">Total Deductions</div>
+      <div class="stat-label" id="s-deductions-label">Total Deductions</div>
       <div class="stat-value" id="s-deductions">--</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon">&#x2261;</div>
-      <div class="stat-label">Net Profit / Loss</div>
+      <div class="stat-label" id="s-net-label">Net Profit / Loss</div>
       <div class="stat-value" id="s-net">--</div>
     </div>
     <div class="stat-card">
       <div class="stat-icon">&#x25CE;</div>
-      <div class="stat-label">Est. Tax Liability</div>
+      <div class="stat-label" id="s-tax-label">Est. Tax Liability</div>
       <div class="stat-value" id="s-tax">--</div>
     </div>
   </div>
@@ -457,6 +591,7 @@
     <div class="tab active" data-tab="overview">Overview</div>
     <div class="tab" data-tab="schedule-c-wryko">Schedule C — Wryko</div>
     <div class="tab" data-tab="schedule-c-coaching">Schedule C — Coaching</div>
+    <div class="tab" data-tab="personal">Personal</div>
     <div class="tab" data-tab="transactions">Transactions<span class="tab-count" id="txn-count">0</span></div>
     <div class="tab" data-tab="quarterly">Quarterly</div>
   </div>
@@ -466,6 +601,16 @@
 
     <!-- OVERVIEW -->
     <div class="tab-panel active" id="panel-overview">
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-title">Income vs Expenses by Entity</div>
+          <canvas id="chart-overview-bar"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Spending by Category</div>
+          <canvas id="chart-overview-donut"></canvas>
+        </div>
+      </div>
       <div class="section">
         <div class="section-header">
           <div class="section-header-bar"></div>
@@ -500,20 +645,34 @@
 
     <!-- SCHEDULE C WRYKO -->
     <div class="tab-panel" id="panel-schedule-c-wryko">
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-title">Wryko — Expense Breakdown</div>
+          <canvas id="chart-wryko-donut"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Schedule C Summary</div>
+          <table>
+            <thead><tr><th>Category</th><th>Deduction Rate</th><th>Gross Amount</th><th>Deductible Amount</th></tr></thead>
+            <tbody id="wryko-expenses"></tbody>
+          </table>
+        </div>
+      </div>
       <div class="section">
         <div class="section-header">
           <div class="section-header-bar"></div>
-          <div class="section-title">Wryko LLC — Schedule C Expense Detail</div>
+          <div class="section-title">Wryko — Expense Breakdown by Category</div>
         </div>
-        <table>
-          <thead><tr><th>Category</th><th>Deduction Rate</th><th>Gross Amount</th><th>Deductible Amount</th></tr></thead>
-          <tbody id="wryko-expenses"></tbody>
-        </table>
+        <div id="wryko-grouped-expenses"></div>
       </div>
       <div class="section">
         <div class="section-header">
           <div class="section-header-bar"></div>
           <div class="section-title">Wryko — Transaction Detail (Audit Trail)</div>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="filter-input" id="filter-wryko" placeholder="Search vendor, description, amount..." data-target="wryko-transactions">
+          <span class="filter-count" id="filter-wryko-count"></span>
         </div>
         <table>
           <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
@@ -524,24 +683,76 @@
 
     <!-- SCHEDULE C COACHING -->
     <div class="tab-panel" id="panel-schedule-c-coaching">
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-title">Coaching — Expense Breakdown</div>
+          <canvas id="chart-coaching-donut"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Schedule C Summary</div>
+          <table>
+            <thead><tr><th>Category</th><th>Deduction Rate</th><th>Gross Amount</th><th>Deductible Amount</th></tr></thead>
+            <tbody id="coaching-expenses"></tbody>
+          </table>
+        </div>
+      </div>
       <div class="section">
         <div class="section-header">
           <div class="section-header-bar"></div>
-          <div class="section-title">Soccer Coaching — Schedule C Detail</div>
+          <div class="section-title">Coaching — Expense Breakdown by Category</div>
         </div>
-        <table>
-          <thead><tr><th>Category</th><th>Deduction Rate</th><th>Gross Amount</th><th>Deductible Amount</th></tr></thead>
-          <tbody id="coaching-expenses"></tbody>
-        </table>
+        <div id="coaching-grouped-expenses"></div>
       </div>
       <div class="section">
         <div class="section-header">
           <div class="section-header-bar"></div>
           <div class="section-title">Coaching — Transaction Detail (Audit Trail)</div>
         </div>
+        <div class="filter-bar">
+          <input type="text" class="filter-input" id="filter-coaching" placeholder="Search vendor, description, amount..." data-target="coaching-transactions">
+          <span class="filter-count" id="filter-coaching-count"></span>
+        </div>
         <table>
           <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
           <tbody id="coaching-transactions"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PERSONAL -->
+    <div class="tab-panel" id="panel-personal">
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-title">Personal — Expense Breakdown</div>
+          <canvas id="chart-personal-donut"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Personal Summary</div>
+          <table>
+            <thead><tr><th>Category</th><th>Total Spent</th><th>Transactions</th></tr></thead>
+            <tbody id="personal-summary"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Personal — Expense Breakdown by Category</div>
+        </div>
+        <div id="personal-grouped-expenses"></div>
+      </div>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Personal — Transaction Detail</div>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="filter-input" id="filter-personal" placeholder="Search vendor, description, amount..." data-target="personal-transactions">
+          <span class="filter-count" id="filter-personal-count"></span>
+        </div>
+        <table>
+          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Account</th><th>Amount</th></tr></thead>
+          <tbody id="personal-transactions"></tbody>
         </table>
       </div>
     </div>
@@ -552,6 +763,23 @@
         <div class="section-header">
           <div class="section-header-bar"></div>
           <div class="section-title">All Transactions — <span id="txn-year">2025</span> YTD</div>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="filter-input" id="filter-all" placeholder="Search vendor, description, category, amount..." data-target="all-transactions">
+          <select class="filter-select" id="filter-all-entity">
+            <option value="">All Entities</option>
+            <option value="wryko">Wryko</option>
+            <option value="coaching">Coaching</option>
+            <option value="personal">Personal</option>
+          </select>
+          <select class="filter-select" id="filter-all-type">
+            <option value="">All Types</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+            <option value="bill">Bill</option>
+            <option value="transfer">Transfer</option>
+          </select>
+          <span class="filter-count" id="filter-all-count"></span>
         </div>
         <table>
           <thead><tr><th style="width:4px;padding:0"></th><th>Date</th><th>Vendor</th><th>Description</th><th>Entity</th><th>Tax Category</th><th>Account</th><th>Amount</th></tr></thead>
@@ -587,10 +815,9 @@
           <div class="section-header-bar"></div>
           <div class="section-title">Monthly Breakdown</div>
         </div>
-        <table>
-          <thead><tr><th>Month</th><th>Income</th><th>Expenses</th><th>Net</th><th style="width:30%">Visualization</th></tr></thead>
-          <tbody id="monthly-table"></tbody>
-        </table>
+        <div class="chart-card" style="border:none;padding:0;">
+          <canvas id="chart-monthly" style="max-height:300px"></canvas>
+        </div>
       </div>
     </div>
 
@@ -651,6 +878,7 @@ document.querySelectorAll(".tab").forEach(tab => {
     document.querySelectorAll(".tab-panel").forEach(p => p.classList.remove("active"));
     tab.classList.add("active");
     document.getElementById(`panel-${tab.dataset.tab}`).classList.add("active");
+    updateSummaryBar(tab.dataset.tab);
   });
 });
 
@@ -664,6 +892,238 @@ const DEDUCTION_RATES = {
   personal:                { rate: "",         label: "Not Deductible",             display: "Personal" },
   needs_review:            { rate: "TBD",      label: "Pending Classification",     display: "Needs Review" },
 };
+
+// Category grouping map — maps transaction `category` field to display groups
+const CATEGORY_GROUPS = {
+  "Car & Transport":   { match: ["transport"],     icon: "\u{1F697}", color: "#60a5fa" },
+  "Software & Tools":  { match: ["tools"],         icon: "\u{1F4BB}", color: "#c084fc" },
+  "Subscriptions":     { match: ["subscriptions"], icon: "\u{1F4F1}", color: "#f472b6" },
+  "Home & Utilities":  { match: ["utilities"],     icon: "\u{1F3E0}", color: "#fbbf24" },
+  "Food & Dining":     { match: ["food"],          icon: "\u{1F37D}", color: "#fb923c" },
+  "Coaching Supplies": { match: ["coaching"],      icon: "\u{26BD}",  color: "#34d399" },
+  "Debt Payments":     { match: ["debt"],          icon: "\u{1F4B3}", color: "#f87171" },
+  "Savings":           { match: ["savings"],       icon: "\u{1F4B0}", color: "#a78bfa" },
+  "Other":             { match: ["other", ""],     icon: "\u{1F4CB}", color: "#94a3b8" },
+};
+
+function getCategoryGroup(category) {
+  const cat = (category || "").toLowerCase();
+  for (const [name, info] of Object.entries(CATEGORY_GROUPS)) {
+    if (info.match.includes(cat)) return name;
+  }
+  return "Other";
+}
+
+function groupTransactionsByCategory(txns) {
+  const groups = {};
+  for (const [name, info] of Object.entries(CATEGORY_GROUPS)) {
+    groups[name] = { ...info, name, items: [], total: 0, deductibleTotal: 0 };
+  }
+  txns.forEach(t => {
+    if (t.type === "income") return;
+    const groupName = getCategoryGroup(t.category);
+    const group = groups[groupName];
+    const amt = parseFloat(t.amount || 0);
+    const ded = parseFloat(t.deductible_amount || 0);
+    group.items.push(t);
+    group.total += amt;
+    group.deductibleTotal += ded;
+  });
+  return Object.values(groups).filter(g => g.items.length > 0).sort((a, b) => b.total - a.total);
+}
+
+function writeoffBadge(pct) {
+  const p = parseFloat(pct || 0);
+  if (p >= 100) return `<span class="writeoff-badge writeoff-full">100%</span>`;
+  if (p > 0) return `<span class="writeoff-badge writeoff-partial">${p}%</span>`;
+  return `<span class="writeoff-badge writeoff-none">0%</span>`;
+}
+
+function renderGroupedExpenses(txns, el) {
+  const groups = groupTransactionsByCategory(txns);
+  if (!groups.length) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#x1F4AD;</div><div class="empty-state-title">No expenses yet</div><div class="empty-state-text">Expenses will appear here grouped by category.</div></div>`;
+    return;
+  }
+  el.innerHTML = groups.map((g, i) => `
+    <div class="category-group${i === 0 ? ' open' : ''}" onclick="this.classList.toggle('open')">
+      <div class="category-group-header">
+        <div class="category-group-left">
+          <div class="category-group-icon">${g.icon}</div>
+          <div>
+            <div class="category-group-name">${g.name}</div>
+            <div class="category-group-count">${g.items.length} transaction${g.items.length !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <div class="category-group-totals">
+          <div class="category-group-total">
+            <div class="category-group-total-label">Total Spent</div>
+            <div class="category-group-total-value" style="color:var(--rose)">${fmt(g.total)}</div>
+          </div>
+          <div class="category-group-total">
+            <div class="category-group-total-label">Written Off</div>
+            <div class="category-group-total-value" style="color:var(--emerald-dark)">${fmt(g.deductibleTotal)}</div>
+          </div>
+          <div class="category-group-arrow">&#x25BC;</div>
+        </div>
+      </div>
+      <div class="category-group-items">
+        <table>
+          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Amount</th><th>Write-Off %</th><th>Deductible</th></tr></thead>
+          <tbody>${g.items.map(t => `
+            <tr>
+              <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${t.date || ""}</td>
+              <td style="font-weight:500">${t.vendor || ""}</td>
+              <td>${t.description || ""}</td>
+              <td class="amount negative">${fmt(t.amount)}</td>
+              <td>${writeoffBadge(t.deductible_pct)}</td>
+              <td class="amount ${parseFloat(t.deductible_amount || 0) > 0 ? 'positive' : ''}">${fmt(t.deductible_amount || 0)}</td>
+            </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  `).join("");
+}
+
+// Chart instance management (destroy on reload to prevent memory leaks)
+const chartInstances = {};
+function makeChart(id, config) {
+  if (chartInstances[id]) chartInstances[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return null;
+  chartInstances[id] = new Chart(ctx, config);
+  return chartInstances[id];
+}
+
+const CHART_COLORS = ["#60a5fa", "#c084fc", "#f472b6", "#fbbf24", "#fb923c", "#34d399", "#f87171", "#a78bfa", "#94a3b8"];
+
+function renderDonutChart(canvasId, groups) {
+  const labels = groups.map(g => g.name);
+  const data = groups.map(g => g.total);
+  const colors = groups.map(g => g.color);
+  makeChart(canvasId, {
+    type: "doughnut",
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors, borderWidth: 0, hoverOffset: 6 }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      cutout: "65%",
+      plugins: {
+        legend: { position: "right", labels: { boxWidth: 10, padding: 10, font: { size: 11, family: "Inter" }, color: "#475569" } },
+        tooltip: {
+          callbacks: {
+            label: (ctx) => {
+              const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+              return ` ${ctx.label}: ${fmt(ctx.parsed)} (${pct}%)`;
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+function renderOverviewBarChart(w, c, personalTotal) {
+  const wInc = parseFloat(w.gross_receipts || 0);
+  const wExp = parseFloat(w.total_expenses || 0);
+  const cInc = parseFloat(c.gross_receipts || 0);
+  const cExp = parseFloat(c.total_expenses || 0);
+  makeChart("chart-overview-bar", {
+    type: "bar",
+    data: {
+      labels: ["Wryko", "Coaching", "Personal"],
+      datasets: [
+        { label: "Income", data: [wInc, cInc, 0], backgroundColor: "#34d399", borderRadius: 4 },
+        { label: "Expenses", data: [wExp, cExp, personalTotal], backgroundColor: "#fb7185", borderRadius: 4 },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      indexAxis: "y",
+      scales: {
+        x: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() } },
+        y: { grid: { display: false }, ticks: { font: { size: 12, weight: 600, family: "Inter" } } },
+      },
+      plugins: {
+        legend: { labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "Inter" } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.x)}` } },
+      },
+    },
+  });
+}
+
+function renderMonthlyChart(txns) {
+  const months = {};
+  txns.forEach(t => {
+    const m = t.date ? t.date.substring(0, 7) : "unknown";
+    if (!months[m]) months[m] = { income: 0, expenses: 0 };
+    if (t.type === "income") months[m].income += parseFloat(t.amount || 0);
+    else months[m].expenses += parseFloat(t.amount || 0);
+  });
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const sorted = Object.keys(months).sort();
+  const labels = sorted.map(m => { const [y, mo] = m.split("-"); return `${monthNames[parseInt(mo) - 1] || mo}`; });
+  makeChart("chart-monthly", {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        { label: "Income", data: sorted.map(m => months[m].income), backgroundColor: "#34d399", borderRadius: 4 },
+        { label: "Expenses", data: sorted.map(m => months[m].expenses), backgroundColor: "#fb7185", borderRadius: 4 },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11, family: "Inter" } } },
+        y: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() } },
+      },
+      plugins: {
+        legend: { labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "Inter" } } },
+        tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` } },
+      },
+    },
+  });
+}
+
+function updateSummaryBar(tabId) {
+  const stats = window._vaultStats && window._vaultStats[tabId];
+  if (!stats) return;
+  const sIncome = document.getElementById("s-income");
+  const sDeductions = document.getElementById("s-deductions");
+  const sNet = document.getElementById("s-net");
+  const sTax = document.getElementById("s-tax");
+  document.getElementById("s-income-label").textContent = stats.incomeLabel;
+  document.getElementById("s-deductions-label").textContent = stats.expLabel;
+  document.getElementById("s-net-label").textContent = stats.netLabel;
+  document.getElementById("s-tax-label").textContent = stats.taxLabel;
+  if (tabId === "personal") {
+    sIncome.textContent = fmt(stats.income);
+    sIncome.className = stats.income > 0 ? "stat-value positive" : "stat-value";
+    sDeductions.textContent = fmt(-stats.expenses);
+    sDeductions.className = "stat-value negative";
+    sNet.textContent = fmt(stats.net);
+    sNet.className = `stat-value ${stats.net >= 0 ? "positive" : "negative"}`;
+    sTax.textContent = fmt(stats.tax);
+    sTax.className = stats.tax > 0 ? "stat-value positive" : "stat-value";
+  } else {
+    sIncome.textContent = fmt(stats.income);
+    sIncome.className = "stat-value positive";
+    sDeductions.textContent = fmt(-stats.expenses);
+    sDeductions.className = "stat-value negative";
+    sNet.textContent = fmt(stats.net);
+    sNet.className = `stat-value ${stats.net >= 0 ? "positive" : "negative"}`;
+    sTax.textContent = fmt(stats.tax);
+    sTax.className = "stat-value negative";
+  }
+}
 
 function accountLink(name) {
   const urls = {
@@ -742,15 +1202,33 @@ async function loadDashboard() {
   const fedTax = taxableIncome * 0.10;
   const totalTax = seTax + fedTax;
 
-  // Summary bar
-  document.getElementById("s-income").textContent = fmt(totalIncome);
-  document.getElementById("s-income").className = "stat-value positive";
-  document.getElementById("s-deductions").textContent = fmt(-totalExpenses);
-  document.getElementById("s-deductions").className = "stat-value negative";
-  document.getElementById("s-net").textContent = fmt(netPL);
-  document.getElementById("s-net").className = `stat-value ${netPL >= 0 ? "positive" : "negative"}`;
-  document.getElementById("s-tax").textContent = fmt(totalTax);
-  document.getElementById("s-tax").className = "stat-value negative";
+  // Build per-entity stats for dynamic summary bar
+  const wIncome = parseFloat(w.gross_receipts || 0);
+  const wExpenses = parseFloat(w.total_expenses || 0);
+  const wNet = wIncome - wExpenses;
+  const cIncome = parseFloat(c.gross_receipts || 0);
+  const cExpenses = parseFloat(c.total_expenses || 0);
+  const cNet = cIncome - cExpenses;
+
+  window._vaultStats = {
+    overview: { income: totalIncome, expenses: totalExpenses, net: netPL, tax: totalTax, incomeLabel: "Gross Income", expLabel: "Total Deductions", netLabel: "Net Profit / Loss", taxLabel: "Est. Tax Liability" },
+    "schedule-c-wryko": { income: wIncome, expenses: wExpenses, net: wNet, tax: wNet > 0 ? wNet * 0.153 : 0, incomeLabel: "Wryko Revenue", expLabel: "Wryko Expenses", netLabel: "Net Profit / Loss", taxLabel: "Est. SE Tax" },
+    "schedule-c-coaching": { income: cIncome, expenses: cExpenses, net: cNet, tax: cNet > 0 ? cNet * 0.153 : 0, incomeLabel: "Coaching Revenue", expLabel: "Coaching Expenses", netLabel: "Net Profit / Loss", taxLabel: "Est. SE Tax" },
+    personal: { income: 0, expenses: 0, net: 0, tax: 0, incomeLabel: "Personal Income", expLabel: "Total Spending", netLabel: "Net Cash Flow", taxLabel: "Deductible" },
+    transactions: { income: totalIncome, expenses: totalExpenses, net: netPL, tax: totalTax, incomeLabel: "Gross Income", expLabel: "Total Deductions", netLabel: "Net Profit / Loss", taxLabel: "Est. Tax Liability" },
+    quarterly: { income: totalIncome, expenses: totalExpenses, net: netPL, tax: totalTax, incomeLabel: "Gross Income", expLabel: "Total Deductions", netLabel: "Net Profit / Loss", taxLabel: "Est. Tax Liability" },
+  };
+
+  // Calculate personal totals from transactions
+  const txnsAll = Array.isArray(transactions) ? transactions : [];
+  const pTxns = txnsAll.filter(t => t.schedule_c_entity === "personal");
+  const pIncome = pTxns.filter(t => t.type === "income").reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+  const pExpenses = pTxns.filter(t => t.type !== "income").reduce((s, t) => s + Math.abs(parseFloat(t.amount || 0)), 0);
+  const pDeductible = pTxns.reduce((s, t) => s + parseFloat(t.deductible_amount || 0), 0);
+  window._vaultStats.personal = { income: pIncome, expenses: pExpenses, net: pIncome - pExpenses, tax: Math.abs(pDeductible), incomeLabel: "Personal Income", expLabel: "Total Spending", netLabel: "Net Cash Flow", taxLabel: "Deductible" };
+
+  // Summary bar — show overview by default
+  updateSummaryBar("overview");
 
   // Overview table
   document.getElementById("overview-table").innerHTML = `
@@ -825,6 +1303,41 @@ async function loadDashboard() {
   renderTxns(wrykoTxns, document.getElementById("wryko-transactions"));
   renderTxns(coachingTxns, document.getElementById("coaching-transactions"));
 
+  // Personal transactions
+  const personalTxns = txns.filter(t => t.schedule_c_entity === "personal");
+  renderTxns(personalTxns, document.getElementById("personal-transactions"));
+
+  // Grouped expense breakdowns for each entity tab
+  renderGroupedExpenses(wrykoTxns, document.getElementById("wryko-grouped-expenses"));
+  renderGroupedExpenses(coachingTxns, document.getElementById("coaching-grouped-expenses"));
+  renderGroupedExpenses(personalTxns, document.getElementById("personal-grouped-expenses"));
+
+  // Personal summary table (by category)
+  const personalGroups = groupTransactionsByCategory(personalTxns);
+  const personalSummaryEl = document.getElementById("personal-summary");
+  if (personalGroups.length) {
+    let pTotal = 0;
+    personalSummaryEl.innerHTML = personalGroups.map(g => {
+      pTotal += g.total;
+      return `<tr><td style="font-weight:500">${g.icon} ${g.name}</td><td class="amount negative">${fmt(g.total)}</td><td style="text-align:right">${g.items.length}</td></tr>`;
+    }).join("") + `<tr class="total-row"><td>Total</td><td class="amount">${fmt(pTotal)}</td><td></td></tr>`;
+  } else {
+    personalSummaryEl.innerHTML = emptyRow(3, "No personal transactions yet.");
+  }
+
+  // Charts — Overview
+  const allGroups = groupTransactionsByCategory(txns);
+  const personalExpenseTotal = personalTxns.filter(t => t.type !== "income").reduce((s, t) => s + parseFloat(t.amount || 0), 0);
+  renderOverviewBarChart(w, c, personalExpenseTotal);
+  renderDonutChart("chart-overview-donut", allGroups);
+
+  // Charts — Entity donut charts
+  const wrykoGroups = groupTransactionsByCategory(wrykoTxns);
+  const coachingGroups = groupTransactionsByCategory(coachingTxns);
+  renderDonutChart("chart-wryko-donut", wrykoGroups);
+  renderDonutChart("chart-coaching-donut", coachingGroups);
+  renderDonutChart("chart-personal-donut", personalGroups);
+
   // All transactions
   document.getElementById("txn-count").textContent = txns.length;
   if (!txns.length) {
@@ -873,45 +1386,75 @@ async function loadDashboard() {
     </tr>`;
   }).join("") + `<tr class="total-row"><td>Total Annual</td><td></td><td></td><td class="amount">${fmt(totalTax)}</td><td></td></tr>`;
 
-  // Monthly breakdown (from transactions) with bar chart
-  const months = {};
-  let maxVal = 0;
-  txns.forEach(t => {
-    const m = t.date ? t.date.substring(0, 7) : "unknown";
-    if (!months[m]) months[m] = { income: 0, expenses: 0 };
-    if (t.type === "income") months[m].income += parseFloat(t.amount || 0);
-    else months[m].expenses += parseFloat(t.amount || 0);
+  // Monthly breakdown — Chart.js bar chart
+  renderMonthlyChart(txns);
+
+  // Store data for filters
+  window._vaultTxns = { all: txns, wryko: wrykoTxns, coaching: coachingTxns, personal: personalTxns };
+  initFilters();
+}
+
+// ============ FILTER LOGIC ============
+function initFilters() {
+  const txnData = window._vaultTxns;
+
+  // Simple entity filters (Wryko, Coaching, Personal)
+  ["wryko", "coaching", "personal"].forEach(entity => {
+    const input = document.getElementById(`filter-${entity}`);
+    if (!input) return;
+    input.value = "";
+    const countEl = document.getElementById(`filter-${entity}-count`);
+    const tbody = document.getElementById(`${entity}-transactions`);
+
+    input.addEventListener("input", () => {
+      const q = input.value.toLowerCase().trim();
+      const rows = tbody.querySelectorAll("tr");
+      let shown = 0;
+      rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        const match = !q || text.includes(q);
+        row.style.display = match ? "" : "none";
+        if (match) shown++;
+      });
+      countEl.textContent = q ? `${shown} of ${rows.length}` : "";
+    });
   });
-  Object.values(months).forEach(d => {
-    if (d.income > maxVal) maxVal = d.income;
-    if (d.expenses > maxVal) maxVal = d.expenses;
-  });
-  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-  const sortedMonths = Object.keys(months).sort();
-  if (sortedMonths.length) {
-    document.getElementById("monthly-table").innerHTML = sortedMonths.map(m => {
-      const d = months[m];
-      const net = d.income - d.expenses;
-      const [y, mo] = m.split("-");
-      const label = `${monthNames[parseInt(mo) - 1] || mo} ${y}`;
-      const incPct = maxVal > 0 ? (d.income / maxVal * 100) : 0;
-      const expPct = maxVal > 0 ? (d.expenses / maxVal * 100) : 0;
-      return `<tr><td style="font-weight:600">${label}</td>
-              <td class="amount positive">${fmt(d.income)}</td>
-              <td class="amount negative">${fmt(-d.expenses)}</td>
-              <td class="${cls(net)}">${fmt(net)}</td>
-              <td>
-                <div class="bar-wrapper">
-                  <div class="bar bar-income" style="width:${incPct}%"></div>
-                </div>
-                <div class="bar-wrapper" style="margin-top:3px">
-                  <div class="bar bar-expense" style="width:${expPct}%"></div>
-                </div>
-              </td></tr>`;
-    }).join("");
-  } else {
-    document.getElementById("monthly-table").innerHTML = emptyRow(5, "Monthly data will populate as transactions are recorded.");
+
+  // All Transactions filter (search + entity + type dropdowns)
+  const allInput = document.getElementById("filter-all");
+  const entitySelect = document.getElementById("filter-all-entity");
+  const typeSelect = document.getElementById("filter-all-type");
+  const allCount = document.getElementById("filter-all-count");
+  const allTbody = document.getElementById("all-transactions");
+
+  if (allInput) allInput.value = "";
+  if (entitySelect) entitySelect.value = "";
+  if (typeSelect) typeSelect.value = "";
+
+  function filterAllTransactions() {
+    const q = (allInput?.value || "").toLowerCase().trim();
+    const entityVal = entitySelect?.value || "";
+    const typeVal = typeSelect?.value || "";
+    const rows = allTbody.querySelectorAll("tr");
+    let shown = 0;
+    const data = txnData.all;
+
+    rows.forEach((row, i) => {
+      const t = data[i];
+      if (!t) { row.style.display = "none"; return; }
+      const textMatch = !q || [t.date, t.vendor, t.description, t.tax_category, t.account, String(t.amount)].join(" ").toLowerCase().includes(q);
+      const entityMatch = !entityVal || t.schedule_c_entity === entityVal;
+      const typeMatch = !typeVal || t.type === typeVal;
+      const visible = textMatch && entityMatch && typeMatch;
+      row.style.display = visible ? "" : "none";
+      if (visible) shown++;
+    });
+    allCount.textContent = (q || entityVal || typeVal) ? `${shown} of ${rows.length}` : "";
   }
+
+  if (allInput) allInput.addEventListener("input", filterAllTransactions);
+  if (entitySelect) entitySelect.addEventListener("change", filterAllTransactions);
+  if (typeSelect) typeSelect.addEventListener("change", filterAllTransactions);
 }
 
 loadDashboard();
