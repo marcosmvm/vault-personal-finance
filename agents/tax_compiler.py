@@ -79,19 +79,23 @@ def compile_entity(entity: dict, current_year: int) -> dict:
     # Save to pf_tax_documents
     print(f"  Saving Schedule C for {entity['entity_name']} to pf_tax_documents...")
     sb = get_supabase()
-    sb.table("pf_tax_documents").upsert(
-        {
-            "tax_year": current_year,
-            "form_type": f"Schedule_C_{entity['entity_key']}",
-            "entity": entity["entity_key"],
-            "status": "draft",
-            "gross_income": gross_income,
-            "total_expenses": total_expenses,
-            "net_profit_loss": net_profit_loss,
-            "document_json": schedule_c,
-        },
-        on_conflict="tax_year,form_type",
+    row = {
+        "tax_year": current_year,
+        "form_type": f"Schedule_C_{entity['entity_key']}",
+        "entity": entity["entity_key"],
+        "status": "draft",
+        "gross_income": gross_income,
+        "total_expenses": total_expenses,
+        "net_profit_loss": net_profit_loss,
+        "document_json": schedule_c,
+    }
+    # Delete existing row for this year/form, then insert fresh
+    sb.table("pf_tax_documents").delete().eq(
+        "tax_year", current_year
+    ).eq(
+        "form_type", f"Schedule_C_{entity['entity_key']}"
     ).execute()
+    sb.table("pf_tax_documents").insert(row).execute()
     print(f"  Schedule C saved for {entity['entity_name']}.")
 
     return {
