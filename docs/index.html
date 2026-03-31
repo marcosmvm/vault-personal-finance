@@ -95,7 +95,12 @@
   <div class="header">
     <h1>VAULT</h1>
     <div class="subtitle">
-      <div>Tax Year <span id="tax-year">2026</span></div>
+      <div>Tax Year
+        <select id="year-select" style="background:#1e293b;color:#fff;border:1px solid #475569;border-radius:4px;padding:2px 6px;font-size:12px;cursor:pointer">
+          <option value="2026">2026</option>
+          <option value="2025" selected>2025</option>
+        </select>
+      </div>
       <div>Marcos Matthews &bull; EIN 41-4275726</div>
       <div style="margin-top:6px;font-size:10px;color:#64748b">Last updated: <span id="last-updated">Loading...</span></div>
     </div>
@@ -220,7 +225,12 @@
 <script>
 const SUPABASE_URL = "https://mrqectaahvxvwegxhydz.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1ycWVjdGFhaHZ4dndlZ3hoeWR6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkwMTU5NjcsImV4cCI6MjA4NDU5MTk2N30.1G3VRD_RlEEW2s4nSV7XnCiVDrTEu6Ahb-jrfCWIeUk";
-const YEAR = new Date().getFullYear();
+let YEAR = parseInt(new URLSearchParams(window.location.search).get("year") || "2025");
+document.getElementById("year-select").value = YEAR;
+document.getElementById("year-select").addEventListener("change", (e) => {
+  YEAR = parseInt(e.target.value);
+  loadDashboard();
+});
 
 const headers = { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` };
 const fmt = (n) => {

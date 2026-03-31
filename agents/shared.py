@@ -70,10 +70,11 @@ def _wrap_html(subject: str, body_text: str) -> str:
             html_lines.append('<hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0">')
 
         elif stripped.startswith(("⚡", "⚠")):
+            # Professional muted alert — not full red
             html_lines.append(
                 f'<table width="100%" cellpadding="0" cellspacing="0" style="margin:6px 0"><tr>'
-                f'<td style="background:#fef2f2;border-left:4px solid #ef4444;padding:10px 14px;'
-                f'border-radius:0 4px 4px 0;font-size:13px;color:#991b1b;line-height:1.5">'
+                f'<td style="background:#fafafa;border-left:3px solid #94a3b8;padding:10px 14px;'
+                f'border-radius:0 4px 4px 0;font-size:13px;color:#334155;line-height:1.5">'
                 f'{stripped}</td></tr></table>'
             )
 
@@ -159,10 +160,9 @@ def _wrap_html(subject: str, body_text: str) -> str:
   <!-- Tax Dashboard Link -->
   <tr><td style="padding:0 32px 24px">
     <table width="100%" cellpadding="0" cellspacing="0">
-      <tr><td style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:14px 16px;text-align:center">
-        <div style="font-size:12px;color:#166534;font-weight:600;margin-bottom:4px">LIVE TAX DOCUMENT</div>
-        <a href="{TAX_DASHBOARD_URL}" style="color:#15803d;font-size:13px;text-decoration:underline">View Full Tax Dashboard &rarr;</a>
-        <div style="font-size:11px;color:#4ade80;margin-top:4px">Monthly &bull; Quarterly &bull; Annual &bull; Audit-Ready</div>
+      <tr><td style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:14px 16px;text-align:center">
+        <a href="{TAX_DASHBOARD_URL}" style="color:#0f172a;font-size:13px;font-weight:600;text-decoration:none;letter-spacing:0.3px">View Tax Dashboard &rarr;</a>
+        <div style="font-size:11px;color:#94a3b8;margin-top:4px">Monthly &bull; Quarterly &bull; Annual &bull; Audit-Ready</div>
       </td></tr>
     </table>
   </td></tr>
