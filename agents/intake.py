@@ -225,7 +225,7 @@ def store_transaction(data: dict, message_id: str) -> None:
     deductible_amount = round(amount * deductible_pct / 100, 2)
 
     row = {
-        "email_id": message_id,
+        "source_email_id": message_id,
         "date": data.get("date"),
         "amount": amount,
         "vendor": data.get("vendor"),
@@ -234,13 +234,12 @@ def store_transaction(data: dict, message_id: str) -> None:
         "type": data.get("type"),
         "account": data.get("account", "unknown"),
         "tax_category": data.get("tax_category"),
+        "tax_year": int(data.get("date", "2026")[:4]) if data.get("date") else 2026,
         "schedule_c_entity": data.get("schedule_c_entity"),
         "deductible_pct": deductible_pct,
         "deductible_amount": deductible_amount,
         "tax_note": data.get("tax_note"),
-        "is_subscription": data.get("is_subscription", False),
-        "subscription_name": data.get("subscription_name"),
-        "subscription_cycle": data.get("subscription_cycle"),
+        "reviewed": False,
     }
 
     sb.table("pf_transactions").insert(row).execute()
