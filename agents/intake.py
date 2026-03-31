@@ -148,9 +148,10 @@ def _connect_imap() -> imaplib.IMAP4_SSL:
     return mail
 
 
-def _search_financial_emails(mail: imaplib.IMAP4_SSL) -> list[bytes]:
-    """Search for financial emails from the last 24 hours. Returns deduplicated UIDs."""
-    since_date = (datetime.now() - timedelta(days=1)).strftime("%d-%b-%Y")
+def _search_financial_emails(mail: imaplib.IMAP4_SSL, lookback_days: int = 1) -> list[bytes]:
+    """Search for financial emails. Returns deduplicated UIDs."""
+    since_date = (datetime.now() - timedelta(days=lookback_days)).strftime("%d-%b-%Y")
+    print(f"  Searching emails since {since_date} ({lookback_days} days back)...")
     seen_uids: set[bytes] = set()
     all_uids: list[bytes] = []
 
@@ -275,7 +276,7 @@ def store_subscription(data: dict) -> None:
 # ---------------------------------------------------------------------------
 
 
-def main() -> None:
+def main(lookback_days: int = 1) -> None:
     """Run the VAULT intake pipeline."""
     print("=" * 60)
     print("VAULT Intake Agent — Transaction Ingestion")
@@ -293,7 +294,7 @@ def main() -> None:
         return
 
     print("[2/4] Searching for financial emails from the last 24 hours...")
-    uids = _search_financial_emails(mail)
+    uids = _search_financial_emails(mail, lookback_days=lookback_days)
     print(f"  Found {len(uids)} candidate email(s).")
 
     if not uids:
@@ -392,4 +393,11 @@ def _run_budget_sync() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+    # Support --backfill N to scan last N days instead of default 1
+    if len(sys.argv) >= 3 and sys.argv[1] == "--backfill":
+        days = int(sys.argv[2])
+        print(f"BACKFILL MODE: scanning last {days} days")
+        main(lookback_days=days)
+    else:
+        main()
