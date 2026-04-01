@@ -957,6 +957,16 @@
 
     <!-- BUDGET -->
     <div class="tab-panel" id="panel-budget">
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-title">Spending by Category</div>
+          <canvas id="chart-budget-donut"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Income Sources</div>
+          <canvas id="chart-income-sources"></canvas>
+        </div>
+      </div>
       <div class="section">
         <div class="section-header">
           <div class="section-header-bar"></div>
@@ -982,10 +992,20 @@
 
     <!-- DEBT -->
     <div class="tab-panel" id="panel-debt">
+      <div class="chart-row">
+        <div class="chart-card">
+          <div class="chart-card-title">Debt Breakdown</div>
+          <canvas id="chart-debt-bar"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-title">Savings Goals Progress</div>
+          <canvas id="chart-savings-bar"></canvas>
+        </div>
+      </div>
       <div class="section">
         <div class="section-header">
           <div class="section-header-bar"></div>
-          <div class="section-title">Debt Tracker (Avalanche Order)</div>
+          <div class="section-title">Debt Tracker (Avalanche Order — Highest Interest First)</div>
         </div>
         <table>
           <thead><tr><th>Name</th><th>Balance</th><th>Interest Rate</th><th>Min Payment</th><th>Extra</th><th>Target Payoff</th></tr></thead>
@@ -1567,21 +1587,24 @@ async function loadDashboard() {
   document.getElementById("txn-year").textContent = YEAR;
   document.getElementById("last-updated").textContent = new Date().toLocaleString();
 
-  let wrykoTotals, coachingTotals, taxLedger, transactions, accounts, budgetData, debtData, savingsData, milestoneData, subscriptionData, billsData, reviewData;
+  let wrykoTotals, coachingTotals, taxLedger, transactions, accounts, budgetData, debtData, savingsData, milestoneData, subscriptionData, billsData, reviewData, spendingData, weeklyTrend, incomeSources;
   try {
-    [wrykoTotals, coachingTotals, taxLedger, transactions, accounts, budgetData, debtData, savingsData, milestoneData, subscriptionData, billsData, reviewData] = await Promise.all([
+    [wrykoTotals, coachingTotals, taxLedger, transactions, accounts, budgetData, debtData, savingsData, milestoneData, subscriptionData, billsData, reviewData, spendingData, weeklyTrend, incomeSources] = await Promise.all([
       rpc("vault_schedule_c_wryko", { target_year: YEAR }),
       rpc("vault_schedule_c_coaching", { target_year: YEAR }),
       rpc("vault_ytd_tax_ledger", { target_year: YEAR }),
       query("pf_transactions", `tax_year=eq.${YEAR}&order=date.desc`),
       query("pf_accounts", "order=type,name"),
-      rpc("vault_budget_status"),
-      rpc("vault_debt_status"),
-      rpc("vault_savings_progress"),
-      rpc("vault_milestone_status"),
-      rpc("vault_all_subscriptions"),
-      rpc("vault_bills_overview"),
-      rpc("vault_needs_review"),
+      rpc("vault_budget_sync_full").catch(() => rpc("vault_budget_status").catch(() => [])),
+      rpc("vault_debt_status").catch(() => []),
+      rpc("vault_savings_progress").catch(() => []),
+      rpc("vault_milestone_status").catch(() => []),
+      rpc("vault_all_subscriptions").catch(() => []),
+      rpc("vault_bills_overview").catch(() => []),
+      rpc("vault_needs_review").catch(() => []),
+      rpc("vault_spending_by_category", { target_year: YEAR }).catch(() => []),
+      rpc("vault_weekly_spending_trend").catch(() => []),
+      rpc("vault_income_sources", { target_year: YEAR }).catch(() => []),
     ]);
   } catch (err) {
     console.error("[VAULT] Data fetch failed:", err);
@@ -1863,9 +1886,13 @@ async function loadDashboard() {
   if (projSelect) projSelect.addEventListener("change", () => renderProjections(projSelect.value));
 
   // ============ BUDGET TAB ============
-  const budgets = Array.isArray(budgetData) ? budgetData : [];
+  // Use RPC data if available, otherwise compute from transactions
+  const budgets = Array.isArray(budgetData) && budgetData.length ? budgetData : [];
+  const spending = Array.isArray(spendingData) ? spendingData : [];
   const budgetEl = document.getElementById("budget-table");
+
   if (budgets.length) {
+    // Render from pf_budget (synced with real transaction spending)
     let totalLimit = 0, totalSpent = 0;
     budgetEl.innerHTML = budgets.map(b => {
       const pct = parseFloat(b.pct_used || 0);
@@ -1886,8 +1913,25 @@ async function loadDashboard() {
         </div></td>
       </tr>`;
     }).join("") + `<tr class="total-row"><td>Total</td><td class="amount">${fmt(totalLimit)}</td><td class="amount">${fmt(totalSpent)}</td><td class="amount ${(totalLimit - totalSpent) >= 0 ? 'positive' : 'negative'}">${fmt(totalLimit - totalSpent)}</td><td></td></tr>`;
+  } else if (spending.length) {
+    // Fallback: show YTD spending by category from transactions
+    let totalSpent = 0;
+    budgetEl.innerHTML = spending.map(s => {
+      const amt = parseFloat(s.total_spent || 0);
+      totalSpent += amt;
+      return `<tr>
+        <td style="font-weight:600;text-transform:capitalize">${(s.category || "other").replace(/_/g, " ")}</td>
+        <td class="amount" style="color:var(--text-muted)">—</td>
+        <td class="amount">${fmt(amt)}</td>
+        <td style="font-size:11px;color:var(--text-muted)">${s.transaction_count} txns (avg ${fmt(s.avg_per_txn)})</td>
+        <td><div class="budget-progress-wrap">
+          <div class="budget-progress-bar"><div class="budget-progress-fill" style="width:100%;background:var(--accent-gold)"></div></div>
+          <span class="budget-progress-pct" style="color:var(--text-muted)">YTD</span>
+        </div></td>
+      </tr>`;
+    }).join("") + `<tr class="total-row"><td>Total Spending</td><td></td><td class="amount">${fmt(totalSpent)}</td><td></td><td></td></tr>`;
   } else {
-    budgetEl.innerHTML = emptyRow(5, "No budget categories set. Seed your pf_budget table to start tracking.");
+    budgetEl.innerHTML = emptyRow(5, "No spending data yet. The intake agent will populate transactions automatically.");
   }
 
   // ============ MILESTONES TAB ============
@@ -1895,100 +1939,166 @@ async function loadDashboard() {
   const milestoneEl = document.getElementById("milestones-container");
   if (milestones.length) {
     milestoneEl.innerHTML = milestones.map(m => {
-      const pct = parseFloat(m.progress_pct || 0);
+      const pct = Math.max(0, parseFloat(m.pct_complete || m.progress_pct || 0));
       const statusClass = m.status === "completed" ? "milestone-completed" : m.status === "paused" ? "milestone-paused" : "milestone-active";
+      const daysLeft = parseInt(m.days_remaining || 0);
+      const daysLabel = daysLeft > 0 ? `${daysLeft} days left` : daysLeft === 0 ? "Due today" : `${Math.abs(daysLeft)} days overdue`;
+      const daysColor = daysLeft > 30 ? "var(--emerald-dark)" : daysLeft > 0 ? "var(--amber-dark)" : "var(--rose)";
       return `<div class="milestone-card">
         <div class="milestone-header">
           <div class="milestone-name">${m.name || ""}</div>
           <span class="milestone-status ${statusClass}">${m.status || "active"}</span>
         </div>
+        <div style="font-size:12px;color:var(--text-muted);margin-bottom:8px">${m.description || ""}</div>
         <div class="milestone-meta">
-          <span>Current: <strong>${fmt(m.current_amount)}</strong></span>
+          <span>Current: <strong class="${pct > 0 ? 'amount positive' : ''}">${fmt(m.current_amount)}</strong></span>
           <span>Target: <strong>${fmt(m.target_amount)}</strong></span>
           ${m.projected_completion ? `<span>Projected: <strong>${m.projected_completion}</strong></span>` : ""}
-          ${m.target_date ? `<span>Goal: <strong>${m.target_date}</strong></span>` : ""}
+          <span>Goal: <strong>${m.target_date || "—"}</strong></span>
+          <span style="color:${daysColor};font-weight:600">${daysLabel}</span>
         </div>
         <div class="milestone-bar"><div class="milestone-fill" style="width:${Math.min(pct, 100)}%"></div></div>
-        <div style="text-align:right;font-size:12px;font-weight:700;color:var(--emerald-dark);margin-top:6px">${pct.toFixed(1)}%</div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px">
+          <span style="font-size:11px;color:var(--text-muted)">${m.milestone_type === "debt_payoff" ? "Debt remaining" : "Saved so far"}</span>
+          <span style="font-size:13px;font-weight:700;color:var(--emerald-dark)">${pct.toFixed(1)}%</span>
+        </div>
       </div>`;
     }).join("");
   } else {
-    milestoneEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#x1F3AF;</div><div class="empty-state-title">No milestones yet</div><div class="empty-state-text">Milestones will appear once pf_milestones is seeded.</div></div>`;
+    milestoneEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#x1F3AF;</div><div class="empty-state-title">No milestones yet</div><div class="empty-state-text">Run migration 063_milestones.sql to set up your 4 financial milestones.</div></div>`;
   }
 
   // ============ DEBT TAB ============
-  const debts = Array.isArray(debtData) ? debtData : [];
+  const debts = Array.isArray(debtData) && debtData.length ? debtData : [];
   const debtEl = document.getElementById("debt-table");
-  if (debts.length) {
+  // If pf_debt is empty, show credit card balances from pf_accounts as debt
+  const ccAccounts = (Array.isArray(accounts) ? accounts : []).filter(a => a.type === "credit_card" && parseFloat(a.current_balance || 0) !== 0);
+  const debtRows = debts.length ? debts : ccAccounts.map(a => ({
+    name: a.name, current_balance: Math.abs(parseFloat(a.current_balance || 0)),
+    interest_rate: a.interest_rate || 0, minimum_payment: a.minimum_payment || 0,
+    monthly_extra: 0, target_payoff_date: null
+  }));
+
+  if (debtRows.length) {
     let totalBalance = 0, totalMin = 0;
-    debtEl.innerHTML = debts.map(d => {
-      totalBalance += parseFloat(d.current_balance || 0);
+    debtEl.innerHTML = debtRows.map(d => {
+      const bal = parseFloat(d.current_balance || 0);
+      totalBalance += bal;
       totalMin += parseFloat(d.minimum_payment || 0);
+      const rate = parseFloat(d.interest_rate || 0);
+      const monthlyInterest = bal * (rate / 100 / 12);
       return `<tr>
         <td style="font-weight:600">${d.name || ""}</td>
-        <td class="amount negative">${fmt(d.current_balance)}</td>
-        <td><span class="rate">${parseFloat(d.interest_rate || 0).toFixed(1)}%</span></td>
+        <td class="amount negative">${fmt(bal)}</td>
+        <td><span class="rate">${rate.toFixed(1)}%</span>${rate > 0 ? ` <span style="font-size:10px;color:var(--text-muted)">(${fmt(monthlyInterest)}/mo interest)</span>` : ""}</td>
         <td class="amount">${fmt(d.minimum_payment)}</td>
         <td class="amount positive">${fmt(d.monthly_extra || 0)}</td>
         <td style="font-variant-numeric:tabular-nums">${d.target_payoff_date || "—"}</td>
       </tr>`;
     }).join("") + `<tr class="total-row"><td>Total Debt</td><td class="amount negative">${fmt(totalBalance)}</td><td></td><td class="amount">${fmt(totalMin)}</td><td></td><td></td></tr>`;
   } else {
-    debtEl.innerHTML = emptyRow(6, "No debts tracked. You're either debt-free or need to seed pf_debt.");
+    debtEl.innerHTML = `<tr><td colspan="6"><div class="empty-state"><div class="empty-state-icon" style="background:linear-gradient(135deg,rgba(52,211,153,0.15),rgba(96,165,250,0.15))">&#x2705;</div><div class="empty-state-title">No outstanding debt</div><div class="empty-state-text">All accounts show zero balances. Keep it up!</div></div></td></tr>`;
   }
 
   // Savings
   const savings = Array.isArray(savingsData) ? savingsData : [];
   const savingsEl = document.getElementById("savings-table");
   if (savings.length) {
+    let totalCurrent = 0, totalTarget = 0, totalMonthlyContrib = 0;
     savingsEl.innerHTML = savings.map(s => {
       const pct = parseFloat(s.pct_complete || 0);
+      const current = parseFloat(s.current_amount || 0);
+      const target = parseFloat(s.target_amount || 0);
+      const monthly = parseFloat(s.monthly_contribution || 0);
+      totalCurrent += current;
+      totalTarget += target;
+      totalMonthlyContrib += monthly;
       let barColor = "var(--emerald)";
       if (pct >= 100) barColor = "#3b82f6";
+      const monthsToGo = monthly > 0 && target > current ? Math.ceil((target - current) / monthly) : 0;
       return `<tr>
         <td style="font-weight:600">${s.name || ""}</td>
-        <td class="amount">${fmt(s.current_amount)}</td>
-        <td class="amount">${fmt(s.target_amount)}</td>
-        <td class="amount">${fmt(s.monthly_contribution)}</td>
+        <td class="amount ${current > 0 ? 'positive' : ''}">${fmt(current)}</td>
+        <td class="amount">${fmt(target)}</td>
+        <td class="amount">${fmt(monthly)}</td>
         <td><div class="budget-progress-wrap">
           <div class="budget-progress-bar"><div class="budget-progress-fill" style="width:${Math.min(pct, 100)}%;background:${barColor}"></div></div>
           <span class="budget-progress-pct" style="color:${barColor}">${pct}%</span>
+          ${monthsToGo > 0 ? `<span style="font-size:10px;color:var(--text-muted);margin-left:6px">${monthsToGo}mo</span>` : ""}
         </div></td>
       </tr>`;
-    }).join("");
+    }).join("") + `<tr class="total-row"><td>Total</td><td class="amount">${fmt(totalCurrent)}</td><td class="amount">${fmt(totalTarget)}</td><td class="amount">${fmt(totalMonthlyContrib)}/mo</td><td></td></tr>`;
   } else {
-    savingsEl.innerHTML = emptyRow(5, "No savings goals set. Seed pf_savings_buckets to track progress.");
+    // Show savings account balances as fallback
+    const savingsAccounts = (Array.isArray(accounts) ? accounts : []).filter(a => a.type === "savings");
+    if (savingsAccounts.length) {
+      savingsEl.innerHTML = savingsAccounts.map(a => `<tr>
+        <td style="font-weight:600">${a.name}</td>
+        <td class="amount positive">${fmt(a.current_balance)}</td>
+        <td class="amount" style="color:var(--text-muted)">—</td>
+        <td class="amount" style="color:var(--text-muted)">—</td>
+        <td><span style="font-size:11px;color:var(--text-muted)">No goals set — run migration 064</span></td>
+      </tr>`).join("");
+    } else {
+      savingsEl.innerHTML = emptyRow(5, "No savings data yet. Run migration 064_seed_real_data.sql to set up savings goals.");
+    }
   }
 
   // ============ SUBSCRIPTIONS TAB ============
   const subs = Array.isArray(subscriptionData) ? subscriptionData : [];
   const subsEl = document.getElementById("subscriptions-table");
-  const activeSubs = subs.filter(s => s.active);
-  const totalMonthly = activeSubs.reduce((s, sub) => s + parseFloat(sub.monthly_cost || 0), 0);
+
+  // Also pull recurring charges from transactions as enrichment
+  const allSubsData = subs.length ? subs : [];
+
+  // If no subs from pf_subscriptions, detect from recurring transaction patterns
+  let displaySubs = allSubsData;
+  if (!displaySubs.length) {
+    // Build subscription-like data from recurring transactions
+    const recurringVendors = {};
+    txns.filter(t => t.type === "expense" || t.type === "bill").forEach(t => {
+      const v = t.vendor || "";
+      if (!v) return;
+      if (!recurringVendors[v]) recurringVendors[v] = { name: v, vendor: v, amounts: [], dates: [], entity: t.schedule_c_entity, category: t.category };
+      recurringVendors[v].amounts.push(parseFloat(t.amount || 0));
+      recurringVendors[v].dates.push(t.date);
+    });
+    displaySubs = Object.values(recurringVendors)
+      .filter(v => v.amounts.length >= 2)
+      .map(v => {
+        const avg = v.amounts.reduce((a, b) => a + b, 0) / v.amounts.length;
+        return { name: v.name, vendor: v.vendor, amount: avg, billing_cycle: "monthly", monthly_cost: avg, priority: null, next_charge: null, active: true, cancel_url: null, category: v.category, _fromTxns: true, _count: v.amounts.length };
+      })
+      .sort((a, b) => b.monthly_cost - a.monthly_cost);
+  }
+
+  const activeSubs = displaySubs.filter(s => s.active);
+  const totalMonthly = activeSubs.reduce((s, sub) => s + parseFloat(sub.monthly_cost || sub.amount || 0), 0);
   document.getElementById("subs-summary").textContent = `${activeSubs.length} active — ${fmt(totalMonthly)}/mo`;
 
   function priorityBadge(p) {
+    if (!p) return '<span class="priority-badge priority-low">—</span>';
     const cls = { critical: "priority-critical", high: "priority-high", medium: "priority-medium", low: "priority-low", zombie: "priority-zombie" };
-    return `<span class="priority-badge ${cls[p] || 'priority-low'}">${p || "—"}</span>`;
+    return `<span class="priority-badge ${cls[p] || 'priority-low'}">${p}</span>`;
   }
 
   function renderSubs(list) {
     if (!list.length) {
-      subsEl.innerHTML = emptyRow(8, "No subscriptions tracked yet.");
+      subsEl.innerHTML = emptyRow(8, "No subscriptions detected. The intake agent will auto-detect subscriptions from email receipts.");
       return;
     }
     subsEl.innerHTML = list.map(s => `<tr${!s.active ? ' style="opacity:0.5"' : ""}>
       <td style="font-weight:600">${s.name || ""}</td>
       <td>${s.vendor || ""}</td>
       <td class="amount">${fmt(s.amount)}</td>
-      <td>${s.billing_cycle || ""}</td>
-      <td class="amount">${fmt(s.monthly_cost)}</td>
+      <td>${s.billing_cycle || ""}${s._fromTxns ? ` <span style="font-size:10px;color:var(--text-muted)">(${s._count}x)</span>` : ""}</td>
+      <td class="amount">${fmt(s.monthly_cost || s.amount)}</td>
       <td>${priorityBadge(s.priority)}</td>
       <td style="font-variant-numeric:tabular-nums">${s.next_charge || "—"}</td>
       <td>${s.active ? '<span class="status-pill status-paid"><span class="status-dot"></span>Active</span>' : '<span class="status-pill status-upcoming"><span class="status-dot"></span>Inactive</span>'}</td>
     </tr>`).join("");
   }
-  renderSubs(subs);
+  renderSubs(displaySubs);
 
   // Subscription filters
   const subsFilterInput = document.getElementById("filter-subs");
@@ -1996,7 +2106,7 @@ async function loadDashboard() {
   function filterSubs() {
     const q = (subsFilterInput?.value || "").toLowerCase();
     const status = subsStatusSelect?.value || "";
-    const filtered = subs.filter(s => {
+    const filtered = displaySubs.filter(s => {
       const textMatch = !q || [s.name, s.vendor, s.purpose, s.category].join(" ").toLowerCase().includes(q);
       const statusMatch = !status || (status === "active" ? s.active : !s.active);
       return textMatch && statusMatch;
@@ -2007,23 +2117,44 @@ async function loadDashboard() {
   if (subsStatusSelect) subsStatusSelect.addEventListener("change", filterSubs);
 
   // ============ BILLS TAB ============
-  const bills = Array.isArray(billsData) ? billsData : [];
+  const bills = Array.isArray(billsData) && billsData.length ? billsData : [];
   const billsEl = document.getElementById("bills-table");
-  if (bills.length) {
-    billsEl.innerHTML = bills.map(b => {
+
+  // If no bills from pf_bills, detect recurring bill-type transactions
+  let displayBills = bills;
+  if (!displayBills.length) {
+    const billVendors = {};
+    txns.filter(t => t.type === "bill").forEach(t => {
+      const v = t.vendor || "";
+      if (!v) return;
+      if (!billVendors[v]) billVendors[v] = { name: v, vendor: v, amounts: [], dates: [] };
+      billVendors[v].amounts.push(parseFloat(t.amount || 0));
+      billVendors[v].dates.push(t.date);
+    });
+    displayBills = Object.values(billVendors).map(v => {
+      const avg = v.amounts.reduce((a, b) => a + b, 0) / v.amounts.length;
+      const lastDate = v.dates.sort().reverse()[0];
+      return { name: v.name, vendor: v.vendor, amount: avg, due_day: null, next_due: null, auto_pay: false, status: "upcoming", category: null, _lastPaid: lastDate, _count: v.amounts.length };
+    }).sort((a, b) => b.amount - a.amount);
+  }
+
+  if (displayBills.length) {
+    let totalBills = 0;
+    billsEl.innerHTML = displayBills.map(b => {
+      totalBills += parseFloat(b.amount || 0);
       const statusCls = b.status === "paid" ? "status-paid" : b.status === "overdue" ? "status-overdue" : "status-upcoming";
       return `<tr>
         <td style="font-weight:600">${b.name || ""}</td>
         <td>${b.vendor || ""}</td>
         <td class="amount">${fmt(b.amount)}</td>
         <td>${b.due_day || "—"}</td>
-        <td style="font-variant-numeric:tabular-nums">${b.next_due || "—"}</td>
+        <td style="font-variant-numeric:tabular-nums">${b.next_due || (b._lastPaid ? `Last: ${b._lastPaid}` : "—")}</td>
         <td>${b.auto_pay ? '<span class="status-pill status-paid"><span class="status-dot"></span>Auto</span>' : '<span class="status-pill status-upcoming"><span class="status-dot"></span>Manual</span>'}</td>
         <td><span class="status-pill ${statusCls}"><span class="status-dot"></span>${b.status || "upcoming"}</span></td>
       </tr>`;
-    }).join("");
+    }).join("") + `<tr class="total-row"><td>Total Monthly Bills</td><td></td><td class="amount">${fmt(totalBills)}</td><td></td><td></td><td></td><td></td></tr>`;
   } else {
-    billsEl.innerHTML = emptyRow(7, "No bills tracked. Seed pf_bills to see upcoming payments.");
+    billsEl.innerHTML = emptyRow(7, "No bill-type transactions found. The intake agent classifies bill payments from email receipts.");
   }
 
   // ============ NEEDS REVIEW TAB ============
@@ -2040,7 +2171,7 @@ async function loadDashboard() {
       <td style="font-weight:500">${r.vendor || ""}</td>
       <td>${r.description || ""}</td>
       <td class="amount">${fmt(r.amount)}</td>
-      <td style="font-size:11px;color:var(--text-muted)">${r.tax_note || ""}</td>
+      <td style="font-size:11px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis">${r.tax_note || ""}</td>
       <td style="white-space:nowrap">
         <button class="review-btn review-btn-wryko" onclick="classifyTransaction('${r.id}','wryko')">Wryko</button>
         <button class="review-btn review-btn-coaching" onclick="classifyTransaction('${r.id}','coaching')">Coaching</button>
@@ -2052,8 +2183,135 @@ async function loadDashboard() {
     reviewWrapper.style.display = "none";
   }
 
-  // Monthly year label
+  // Monthly year label + weekly trend chart
   document.getElementById("monthly-year").textContent = YEAR;
+
+  // Weekly spending trend chart (if data available)
+  const weeks = Array.isArray(weeklyTrend) ? weeklyTrend : [];
+  if (weeks.length > 1) {
+    const weekLabels = weeks.reverse().map(w => {
+      const d = new Date(w.week_start + "T00:00:00");
+      return `${d.toLocaleDateString("en-US", { month: "short", day: "numeric" })}`;
+    });
+    const weekIncome = weeks.map(w => parseFloat(w.total_income || 0));
+    const weekExpense = weeks.map(w => parseFloat(w.total_expenses || 0));
+    const weekNet = weeks.map(w => parseFloat(w.net || 0));
+    makeChart("chart-monthly", {
+      type: "bar",
+      data: {
+        labels: weekLabels,
+        datasets: [
+          { label: "Income", data: weekIncome, backgroundColor: "#34d399", borderRadius: 4, barPercentage: 0.6 },
+          { label: "Expenses", data: weekExpense, backgroundColor: "#fb7185", borderRadius: 4, barPercentage: 0.6 },
+          { label: "Net", data: weekNet, type: "line", borderColor: "#60a5fa", backgroundColor: "rgba(96,165,250,0.1)", fill: true, tension: 0.3, pointRadius: 4, pointBackgroundColor: "#60a5fa", borderWidth: 2 },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11, family: "Inter" } } },
+          y: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() } },
+        },
+        plugins: {
+          legend: { labels: { boxWidth: 10, padding: 12, font: { size: 11, family: "Inter" } } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y || ctx.parsed)}` } },
+        },
+      },
+    });
+  } else {
+    renderMonthlyChart(txns);
+  }
+
+  // ============ BUDGET CHARTS ============
+  // Spending by category donut chart
+  const spendingForChart = budgets.length
+    ? budgets.map(b => ({ name: (b.category || "").replace(/_/g, " "), total: parseFloat(b.current_spent || 0) })).filter(b => b.total > 0)
+    : spending.map(s => ({ name: (s.category || "other").replace(/_/g, " "), total: parseFloat(s.total_spent || 0) }));
+  if (spendingForChart.length) {
+    makeChart("chart-budget-donut", {
+      type: "doughnut",
+      data: {
+        labels: spendingForChart.map(s => s.name.charAt(0).toUpperCase() + s.name.slice(1)),
+        datasets: [{ data: spendingForChart.map(s => s.total), backgroundColor: CHART_COLORS.slice(0, spendingForChart.length), borderWidth: 0, hoverOffset: 6 }],
+      },
+      options: { responsive: true, maintainAspectRatio: true, cutout: "65%", plugins: {
+        legend: { position: "right", labels: { boxWidth: 10, padding: 10, font: { size: 11, family: "Inter" }, color: "#475569" } },
+        tooltip: { callbacks: { label: ctx => { const total = ctx.dataset.data.reduce((a, b) => a + b, 0); return ` ${ctx.label}: ${fmt(ctx.parsed)} (${(ctx.parsed / total * 100).toFixed(1)}%)`; } } },
+      }},
+    });
+  }
+
+  // Income sources chart
+  const incSources = Array.isArray(incomeSources) ? incomeSources : [];
+  if (incSources.length) {
+    const incColors = incSources.map(s => s.entity === "wryko" ? "#c084fc" : s.entity === "coaching" ? "#34d399" : "#94a3b8");
+    makeChart("chart-income-sources", {
+      type: "bar",
+      data: {
+        labels: incSources.map(s => (s.vendor || "Unknown").substring(0, 20)),
+        datasets: [{
+          label: "Revenue",
+          data: incSources.map(s => parseFloat(s.total || 0)),
+          backgroundColor: incColors,
+          borderRadius: 6, barPercentage: 0.7,
+        }],
+      },
+      options: {
+        indexAxis: "y", responsive: true, maintainAspectRatio: true,
+        scales: {
+          x: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() } },
+          y: { grid: { display: false }, ticks: { font: { size: 11, family: "Inter", weight: 600 } } },
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${fmt(ctx.parsed.x)} (${ctx.raw.transaction_count || incSources[ctx.dataIndex]?.transaction_count || ""} txns)` } },
+        },
+      },
+    });
+  }
+
+  // ============ DEBT & SAVINGS CHARTS ============
+  if (debtRows.length) {
+    makeChart("chart-debt-bar", {
+      type: "bar",
+      data: {
+        labels: debtRows.map(d => (d.name || "").substring(0, 18)),
+        datasets: [
+          { label: "Balance", data: debtRows.map(d => parseFloat(d.current_balance || 0)), backgroundColor: "#fb7185", borderRadius: 6 },
+          { label: "Min Payment", data: debtRows.map(d => parseFloat(d.minimum_payment || 0)), backgroundColor: "#fbbf24", borderRadius: 6 },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11, family: "Inter" } } },
+          y: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() } },
+        },
+        plugins: { legend: { labels: { boxWidth: 10, font: { size: 11, family: "Inter" } } }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` } } },
+      },
+    });
+  }
+
+  if (savings.length) {
+    makeChart("chart-savings-bar", {
+      type: "bar",
+      data: {
+        labels: savings.map(s => (s.name || "").substring(0, 18)),
+        datasets: [
+          { label: "Current", data: savings.map(s => parseFloat(s.current_amount || 0)), backgroundColor: "#34d399", borderRadius: 6 },
+          { label: "Target", data: savings.map(s => parseFloat(s.target_amount || 0)), backgroundColor: "rgba(148,163,184,0.3)", borderColor: "#94a3b8", borderWidth: 1, borderRadius: 6 },
+        ],
+      },
+      options: {
+        responsive: true, maintainAspectRatio: true,
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 11, family: "Inter" } } },
+          y: { grid: { color: "#f1f5f9" }, ticks: { font: { size: 11, family: "Inter" }, callback: v => "$" + v.toLocaleString() } },
+        },
+        plugins: { legend: { labels: { boxWidth: 10, font: { size: 11, family: "Inter" } } }, tooltip: { callbacks: { label: ctx => ` ${ctx.dataset.label}: ${fmt(ctx.parsed.y)}` } } },
+      },
+    });
+  }
 
   // Store data for filters
   window._vaultTxns = { all: txns, wryko: wrykoTxns, coaching: coachingTxns, personal: personalTxns };
