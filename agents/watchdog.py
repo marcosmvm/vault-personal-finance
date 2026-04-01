@@ -1,9 +1,10 @@
-"""VAULT Morning Briefing — Daily transactions + weekly contribution matrix.
+"""VAULT Daily Email — Clean 3-section financial snapshot.
 
-Sends every morning: today's transactions and a week-to-date breakdown
-by entity (Personal / Wryko / Coaching).
+Sends every morning: today's transactions, fixed expenses status,
+and variable expenses vs weekly budget.
 """
 
+import os
 import sys
 import traceback
 from datetime import date
@@ -11,12 +12,11 @@ from datetime import date
 from agents.shared import rpc, send_email
 
 
-ENTITY_DISPLAY = {
-    "personal": "Personal",
-    "wryko": "Wryko",
-    "coaching": "Coaching",
-    "split": "Split",
-}
+# Categories classified as fixed (predictable, recurring)
+FIXED_CATEGORIES = {"housing", "utilities", "debt", "subscriptions", "coaching", "tools", "groceries"}
+
+# Everything else is variable (discretionary)
+# food (eating out), transport, entertainment, other, etc.
 
 
 def _safe_rpc(name, params=None):
@@ -42,84 +42,126 @@ def _fmt(amount):
 def main():
     today = date.today()
     day_name = today.strftime("%A")
-    month_day = today.strftime("%B %d, %Y")
+    month_day = today.strftime("%B %-d, %Y")
 
-    print(f"VAULT Morning Briefing: {month_day}")
+    print(f"VAULT Daily Email: {month_day}")
 
-    # ── Fetch data ──────────────────────────────────────────────────
+    # ── Fetch data (4 RPCs) ───────────────────────────────────────
     transactions = _safe_rpc("vault_daily_transactions", {"target_date": today.isoformat()})
-    weekly = _safe_rpc("vault_weekly_entity_summary", {"target_date": today.isoformat()})
+    bills = _safe_rpc("vault_bills_overview")
+    subscriptions = _safe_rpc("vault_active_subscriptions")
+    budgets = _safe_rpc("vault_budget_status")
 
-    # ── Build email body ────────────────────────────────────────────
-    body = f"BRIAN'S DAILY FINANCIAL BRIEFING\n"
-    body += f"{day_name} — {month_day}\n\n"
+    # ── Build email body ──────────────────────────────────────────
+    body = ""
 
-    # ━━━ 1. DAILY TRANSACTIONS ━━━
-    body += "DAILY TRANSACTIONS\n\n"
+    # ━━━ Section 1: TODAY'S TRANSACTIONS ━━━
+    body += "TODAY'S TRANSACTIONS\n\n"
 
     if transactions:
+        body += "| Vendor | Amount | Category |\n"
         for t in transactions:
             vendor = t.get("vendor", "Unknown")
             amount = float(t.get("amount", 0))
+            category = (t.get("category") or "—").capitalize()
             tx_type = t.get("type", "")
-            entity = t.get("schedule_c_entity", "personal") or "personal"
 
-            # Sign: income positive, expenses negative
             if tx_type == "income":
                 display_amt = f"+{_fmt(amount)}"
             else:
                 display_amt = f"-{_fmt(amount)}"
 
-            # Entity tag for non-personal
-            tag = ""
-            if entity != "personal":
-                tag = f" [{ENTITY_DISPLAY.get(entity, entity)}]"
-
-            body += f"• {vendor} — {display_amt}{tag}\n"
+            body += f"| {vendor} | {display_amt} | {category} |\n"
     else:
-        body += "• No transactions today\n"
+        body += "No transactions recorded today.\n"
 
     body += "\n"
 
-    # ━━━ 2. WEEKLY CONTRIBUTION ━━━
-    body += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-    body += "WEEKLY CONTRIBUTION (WEEK-TO-DATE)\n\n"
+    # ━━━ Section 2: FIXED EXPENSES ━━━
+    body += "FIXED EXPENSES\n\n"
 
-    if weekly:
-        # Build entity columns in consistent order
-        entity_order = ["personal", "wryko", "coaching", "split"]
-        present = [e for e in entity_order if any(
-            r.get("entity") == e for r in weekly
-        )]
+    fixed_items = []
 
-        # Build lookup
-        data = {r["entity"]: r for r in weekly}
+    # Add bills
+    for b in bills:
+        name = b.get("name", "Unknown")
+        amount = float(b.get("amount", 0))
+        status_raw = (b.get("status") or "upcoming").lower()
+        next_due = b.get("next_due", "—")
 
-        # Header row
-        headers = [""] + [ENTITY_DISPLAY.get(e, e) for e in present]
-        body += "| " + " | ".join(headers) + " |\n"
+        if status_raw == "paid":
+            status = "Paid"
+        elif status_raw == "overdue":
+            status = "Overdue"
+        else:
+            status = "Not Paid"
 
-        # Data rows
-        for metric in ["income", "expenses", "taxes", "writeoffs"]:
-            label = metric.capitalize()
-            row = [label]
-            for e in present:
-                val = float(data.get(e, {}).get(metric, 0))
-                row.append(_fmt(val))
-            body += "| " + " | ".join(row) + " |\n"
+        fixed_items.append({
+            "name": name,
+            "amount": amount,
+            "status": status,
+            "date": next_due,
+            "sort_date": next_due or "9999",
+        })
+
+    # Add subscriptions as fixed expenses
+    for s in subscriptions:
+        name = s.get("name", "Unknown")
+        amount = float(s.get("amount", 0))
+        next_charge = s.get("next_charge", "—")
+
+        fixed_items.append({
+            "name": name,
+            "amount": amount,
+            "status": "Active",
+            "date": next_charge,
+            "sort_date": next_charge or "9999",
+        })
+
+    # Sort by date
+    fixed_items.sort(key=lambda x: x["sort_date"])
+
+    if fixed_items:
+        body += "| Item | Amount | Status | Date |\n"
+        for item in fixed_items:
+            body += f"| {item['name']} | {_fmt(item['amount'])} | {item['status']} | {item['date']} |\n"
     else:
-        body += "No transaction data this week.\n"
+        body += "No fixed expenses tracked.\n"
 
     body += "\n"
 
-    # ── Send ────────────────────────────────────────────────────────
-    subject = f"BRIAN: Daily Briefing — {day_name}, {today.strftime('%b %d')}"
+    # ━━━ Section 3: VARIABLE EXPENSES ━━━
+    body += "VARIABLE EXPENSES\n\n"
+
+    variable_budgets = []
+    for b in budgets:
+        category = (b.get("category") or "other").lower()
+        if category not in FIXED_CATEGORIES:
+            monthly_limit = float(b.get("monthly_limit", 0))
+            current_spent = float(b.get("current_spent", 0))
+            weekly_budget = monthly_limit / 4.33
+
+            variable_budgets.append({
+                "category": category.capitalize(),
+                "spent": current_spent,
+                "weekly_budget": weekly_budget,
+            })
+
+    if variable_budgets:
+        body += "| Category | Spent | Weekly Budget |\n"
+        for v in variable_budgets:
+            body += f"| {v['category']} | {_fmt(v['spent'])} | {_fmt(v['weekly_budget'])} |\n"
+    else:
+        body += "No variable expense categories tracked.\n"
+
+    # ── Send ──────────────────────────────────────────────────────
+    subject = f"VAULT — {day_name}, {today.strftime('%b %-d')}"
 
     try:
         send_email(subject, body)
-        print(f"Briefing sent: {len(transactions)} transactions, {len(weekly)} entities")
+        print(f"Daily email sent: {len(transactions)} transactions, {len(fixed_items)} fixed expenses, {len(variable_budgets)} variable categories")
     except Exception as e:
-        print(f"ERROR: failed to send briefing: {e}")
+        print(f"ERROR: failed to send daily email: {e}")
         traceback.print_exc()
         sys.exit(1)
 
@@ -128,6 +170,6 @@ if __name__ == "__main__":
     try:
         main()
     except Exception as e:
-        print(f"FATAL: morning briefing failed: {e}")
+        print(f"FATAL: daily email failed: {e}")
         traceback.print_exc()
         sys.exit(1)

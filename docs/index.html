@@ -639,24 +639,50 @@
 
   /* ============ PRINT / PDF STYLES ============ */
   @media print {
+    @page { margin: 0.75in; }
     body { background: white; font-size: 11px; }
     .container { max-width: 100%; padding: 0; }
-    .header { border-radius: 0; page-break-after: avoid; }
+
+    /* Print header: show clean document title */
+    .header { border-radius: 0; page-break-after: avoid; background: white !important; box-shadow: none !important; }
     .header::before, .header::after { display: none; }
+    .header .tagline::after {
+      content: " — Prepared " attr(data-print-date);
+      font-weight: 400;
+    }
+
+    /* Hide interactive elements */
     button, .filter-bar, .filter-input, .filter-select, .tabs-bar, .year-toggle { display: none !important; }
+    .header-meta button { display: none !important; }
+
     .content { border: none; box-shadow: none; padding: 16px; }
-    .tab-panel { display: block !important; page-break-inside: avoid; margin-bottom: 24px; }
+
+    /* Show all tab panels for printing */
+    .tab-panel { display: block !important; margin-bottom: 24px; }
     .tab-panel::before { content: attr(data-print-title); display: block; font-size: 16px; font-weight: 800; color: #1e293b; margin: 24px 0 12px; padding-bottom: 8px; border-bottom: 2px solid #e2e8f0; }
+
+    /* Schedule C sections get their own page */
+    #panel-tax { page-break-before: always; }
+
     .stats-grid { box-shadow: none; border: 1px solid #e2e8f0; }
     .stat-card::before { display: none; }
-    .chart-card { border: 1px solid #e2e8f0; box-shadow: none; page-break-inside: avoid; }
+
+    /* Hide charts — they don't render in print */
+    canvas { display: none !important; }
+    .chart-card { display: none !important; }
+
     .category-group { break-inside: avoid; }
-    .category-group-items { max-height: none !important; }
-    .category-group.open .category-group-items, .category-group-items { max-height: none !important; overflow: visible !important; }
+    .category-group-items { max-height: none !important; overflow: visible !important; }
+    .category-group.open .category-group-items { max-height: none !important; overflow: visible !important; }
+
     .section { page-break-inside: avoid; }
-    .footer { page-break-before: auto; }
+
+    /* Clean table printing */
     table { font-size: 10px; }
-    canvas { max-height: 200px !important; }
+    table tr { page-break-inside: avoid; }
+    thead { display: table-header-group; }
+
+    .footer { page-break-before: auto; }
     .empty-state { display: none; }
     #no-transactions { display: none !important; }
   }

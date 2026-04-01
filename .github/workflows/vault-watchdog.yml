@@ -1,4 +1,4 @@
-name: VAULT Morning Briefing — Daily
+name: VAULT Daily Email
 
 on:
   schedule:
@@ -18,9 +18,8 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      - name: Run morning briefing
+      - name: Send daily email
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
@@ -39,7 +38,7 @@ jobs:
           import smtplib, os
           from email.mime.text import MIMEText
           msg = MIMEText('The VAULT Morning Briefing agent failed. Check GitHub Actions for details:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}')
-          msg['Subject'] = 'VAULT ALERT: Morning Briefing Failed'
+          msg['Subject'] = 'VAULT ALERT: Daily Email Failed'
           msg['From'] = os.environ['GMAIL_ADDRESS']
           msg['To'] = os.environ['ALERT_EMAIL']
           with smtplib.SMTP_SSL('smtp.gmail.com', 465) as s:

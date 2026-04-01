@@ -92,8 +92,11 @@ def _render_pipe_table(rows: list[list[str]]) -> str:
     return html
 
 
-def _wrap_html(subject: str, body_text: str) -> str:
-    """Wrap plain text body in a stunning fintech-style HTML email template."""
+def _wrap_html(subject: str, body_text: str, date_display: str | None = None) -> str:
+    """Wrap plain text body in a clean fintech-style HTML email template."""
+    from datetime import date as _date
+    if date_display is None:
+        date_display = _date.today().strftime("%B %-d, %Y")
     lines = body_text.split("\n")
     html_lines = []
     in_bullet_list = False
@@ -224,12 +227,10 @@ def _wrap_html(subject: str, body_text: str) -> str:
       <tr>
         <td>
           <div style="font-size:26px;font-weight:800;letter-spacing:3px;color:#0f172a">VAULT</div>
-          <div style="font-size:10px;letter-spacing:2px;color:#d4a574;text-transform:uppercase;margin-top:2px;font-weight:600">Personal Finance Intelligence</div>
+          <div style="font-size:13px;letter-spacing:0.5px;color:#1e293b;margin-top:4px;font-weight:600">Marcos Matthews</div>
         </td>
-        <td align="right" style="vertical-align:top">
-          <div style="display:inline-block;background:rgba(212,165,116,0.08);border:1px solid rgba(212,165,116,0.2);border-radius:20px;padding:4px 14px">
-            <span style="font-size:10px;color:#b8860b;letter-spacing:0.5px;font-weight:600">AUTOMATED REPORT</span>
-          </div>
+        <td align="right" style="vertical-align:bottom">
+          <div style="font-size:12px;color:#64748b;font-weight:500;letter-spacing:0.3px">{date_display}</div>
         </td>
       </tr>
     </table>
@@ -238,7 +239,6 @@ def _wrap_html(subject: str, body_text: str) -> str:
   <!-- Subject line -->
   <tr><td style="padding:28px 36px 6px">
     <div style="font-size:18px;font-weight:700;color:#0f172a;letter-spacing:-0.2px">{subject}</div>
-    <div style="font-size:11px;color:#94a3b8;margin-top:6px;font-weight:500">Prepared for Marcos Matthews</div>
   </td></tr>
 
   <!-- Body -->
@@ -253,12 +253,11 @@ def _wrap_html(subject: str, body_text: str) -> str:
         <table cellpadding="0" cellspacing="0">
           <tr><td align="center" style="border-radius:12px;background:linear-gradient(135deg,#d4a574 0%,#e8956a 100%);box-shadow:0 4px 14px rgba(212,165,116,0.3),0 2px 6px rgba(232,149,106,0.2)">
             <a href="{TAX_DASHBOARD_URL}" target="_blank" style="display:inline-block;padding:14px 36px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;letter-spacing:0.5px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-              View Tax Dashboard
+              View My Taxes
               <span style="color:#ffffff;margin-left:6px">&rarr;</span>
             </a>
           </td></tr>
         </table>
-        <div style="font-size:10px;color:#94a3b8;margin-top:10px;letter-spacing:0.3px">Monthly &#183; Quarterly &#183; Annual &#183; Audit-Ready</div>
       </td></tr>
     </table>
   </td></tr>
