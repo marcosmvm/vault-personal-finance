@@ -561,6 +561,94 @@
     .empty-state { display: none; }
     #no-transactions { display: none !important; }
   }
+
+  /* ============ BUDGET PROGRESS BARS ============ */
+  .budget-progress-wrap {
+    display: flex; align-items: center; gap: 10px; min-width: 180px;
+  }
+  .budget-progress-bar {
+    flex: 1; height: 10px; background: var(--border-light);
+    border-radius: 5px; overflow: hidden; position: relative;
+  }
+  .budget-progress-fill {
+    height: 100%; border-radius: 5px; transition: width 0.4s ease;
+  }
+  .budget-progress-pct {
+    font-size: 11px; font-weight: 700; min-width: 40px; text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ============ MILESTONE CARDS ============ */
+  .milestone-card {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    transition: background 0.15s;
+  }
+  .milestone-card:hover { background: var(--hover-warm); }
+  .milestone-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .milestone-name {
+    font-size: 15px; font-weight: 700; color: var(--text-primary);
+  }
+  .milestone-status {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 3px 10px; border-radius: 12px;
+  }
+  .milestone-active { background: var(--emerald-100); color: var(--emerald-dark); }
+  .milestone-completed { background: rgba(96,165,250,0.15); color: #3b82f6; }
+  .milestone-paused { background: var(--slate-100); color: var(--slate-dark); }
+  .milestone-meta {
+    display: flex; gap: 24px; margin-bottom: 12px;
+    font-size: 12px; color: var(--text-muted);
+  }
+  .milestone-meta strong { color: var(--text-primary); }
+  .milestone-bar {
+    height: 12px; background: var(--border-light);
+    border-radius: 6px; overflow: hidden;
+  }
+  .milestone-fill {
+    height: 100%; border-radius: 6px; transition: width 0.5s ease;
+    background: linear-gradient(90deg, var(--emerald), var(--emerald-dark));
+  }
+
+  /* ============ PRIORITY BADGES ============ */
+  .priority-badge {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+  .priority-critical { background: var(--rose-100); color: var(--rose-dark); }
+  .priority-high { background: var(--amber-100); color: var(--amber-dark); }
+  .priority-medium { background: rgba(96,165,250,0.15); color: #3b82f6; }
+  .priority-low { background: var(--slate-100); color: var(--slate-dark); }
+  .priority-zombie { background: rgba(168,85,247,0.15); color: #7c3aed; }
+
+  /* ============ REVIEW ACTIONS ============ */
+  .review-btn {
+    padding: 5px 12px; border-radius: 6px; border: 1px solid var(--border);
+    font-family: inherit; font-size: 11px; font-weight: 600;
+    cursor: pointer; transition: all 0.15s; margin: 0 2px;
+  }
+  .review-btn-approve {
+    background: var(--emerald-100); color: var(--emerald-dark); border-color: var(--emerald);
+  }
+  .review-btn-approve:hover { background: var(--emerald); color: white; }
+  .review-btn-personal {
+    background: var(--slate-100); color: var(--slate-dark); border-color: var(--slate);
+  }
+  .review-btn-personal:hover { background: var(--slate); color: white; }
+  .review-btn-wryko {
+    background: var(--violet-100); color: var(--violet); border-color: var(--violet);
+  }
+  .review-btn-wryko:hover { background: var(--violet); color: white; }
+  .review-btn-coaching {
+    background: var(--emerald-100); color: var(--emerald-dark); border-color: var(--emerald);
+  }
+  .review-btn-coaching:hover { background: var(--emerald-dark); color: white; }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 </head>
@@ -618,6 +706,13 @@
     <div class="tab" data-tab="schedule-c-coaching">Schedule C — Coaching</div>
     <div class="tab" data-tab="personal">Personal</div>
     <div class="tab" data-tab="transactions">Transactions<span class="tab-count" id="txn-count">0</span></div>
+    <div class="tab" data-tab="budget">Budget</div>
+    <div class="tab" data-tab="milestones">Milestones</div>
+    <div class="tab" data-tab="debt">Debt</div>
+    <div class="tab" data-tab="subscriptions">Subscriptions</div>
+    <div class="tab" data-tab="bills">Bills</div>
+    <div class="tab" data-tab="needs-review">Review<span class="tab-count" id="review-count">0</span></div>
+    <div class="tab" data-tab="monthly">Trends</div>
   </div>
 
   <!-- CONTENT -->
@@ -860,8 +955,125 @@
       </div>
     </div>
 
-    <!-- MONTHLY BREAKDOWN (moved from Quarterly) -->
-    <div style="display:none"><canvas id="chart-monthly"></canvas></div>
+    <!-- BUDGET -->
+    <div class="tab-panel" id="panel-budget">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Monthly Budget Status</div>
+        </div>
+        <table>
+          <thead><tr><th>Category</th><th>Limit</th><th>Spent</th><th>Remaining</th><th>Progress</th></tr></thead>
+          <tbody id="budget-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MILESTONES -->
+    <div class="tab-panel" id="panel-milestones">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Financial Milestones</div>
+        </div>
+        <div id="milestones-container"></div>
+      </div>
+    </div>
+
+    <!-- DEBT -->
+    <div class="tab-panel" id="panel-debt">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Debt Tracker (Avalanche Order)</div>
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Balance</th><th>Interest Rate</th><th>Min Payment</th><th>Extra</th><th>Target Payoff</th></tr></thead>
+          <tbody id="debt-table"></tbody>
+        </table>
+      </div>
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Savings Progress</div>
+        </div>
+        <table>
+          <thead><tr><th>Goal</th><th>Current</th><th>Target</th><th>Monthly</th><th>Progress</th></tr></thead>
+          <tbody id="savings-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SUBSCRIPTIONS -->
+    <div class="tab-panel" id="panel-subscriptions">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">All Subscriptions</div>
+        </div>
+        <div class="filter-bar">
+          <input type="text" class="filter-input" id="filter-subs" placeholder="Search subscriptions...">
+          <select class="filter-select" id="filter-subs-status">
+            <option value="">All</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <span class="filter-count" id="subs-summary"></span>
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Vendor</th><th>Amount</th><th>Cycle</th><th>Monthly</th><th>Priority</th><th>Next Charge</th><th>Status</th></tr></thead>
+          <tbody id="subscriptions-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- BILLS -->
+    <div class="tab-panel" id="panel-bills">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Recurring Bills</div>
+        </div>
+        <table>
+          <thead><tr><th>Name</th><th>Vendor</th><th>Amount</th><th>Due Day</th><th>Next Due</th><th>Auto-Pay</th><th>Status</th></tr></thead>
+          <tbody id="bills-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- NEEDS REVIEW -->
+    <div class="tab-panel" id="panel-needs-review">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Transactions Pending Review</div>
+        </div>
+        <div id="review-empty" style="display:none">
+          <div class="empty-state">
+            <div class="empty-state-icon">&#x2705;</div>
+            <div class="empty-state-title">All caught up!</div>
+            <div class="empty-state-text">No transactions need review right now.</div>
+          </div>
+        </div>
+        <table id="review-table-wrapper">
+          <thead><tr><th>Date</th><th>Vendor</th><th>Description</th><th>Amount</th><th>Note</th><th>Action</th></tr></thead>
+          <tbody id="review-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MONTHLY BREAKDOWN -->
+    <div class="tab-panel" id="panel-monthly">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-header-bar"></div>
+          <div class="section-title">Monthly Income vs Expenses — <span id="monthly-year">2025</span></div>
+        </div>
+        <div class="chart-card" style="max-width:100%">
+          <canvas id="chart-monthly"></canvas>
+        </div>
+      </div>
+    </div>
 
   </div>
 
@@ -1117,6 +1329,52 @@ function makeChart(id, config) {
 
 const CHART_COLORS = ["#60a5fa", "#c084fc", "#f472b6", "#fbbf24", "#fb923c", "#34d399", "#f87171", "#a78bfa", "#94a3b8"];
 
+// Standard deduction by year (Single filer)
+const STANDARD_DEDUCTIONS = { 2024: 14600, 2025: 15700, 2026: 16000 };
+
+// 2025 federal income tax brackets (Single filer)
+const TAX_BRACKETS = {
+  2024: [
+    { limit: 11600, rate: 0.10 },
+    { limit: 47150, rate: 0.12 },
+    { limit: 100525, rate: 0.22 },
+    { limit: 191950, rate: 0.24 },
+    { limit: 243725, rate: 0.32 },
+    { limit: 609350, rate: 0.35 },
+    { limit: Infinity, rate: 0.37 },
+  ],
+  2025: [
+    { limit: 11925, rate: 0.10 },
+    { limit: 48475, rate: 0.12 },
+    { limit: 103350, rate: 0.22 },
+    { limit: 197300, rate: 0.24 },
+    { limit: 250525, rate: 0.32 },
+    { limit: 626350, rate: 0.35 },
+    { limit: Infinity, rate: 0.37 },
+  ],
+  2026: [
+    { limit: 11925, rate: 0.10 },
+    { limit: 48475, rate: 0.12 },
+    { limit: 103350, rate: 0.22 },
+    { limit: 197300, rate: 0.24 },
+    { limit: 250525, rate: 0.32 },
+    { limit: 626350, rate: 0.35 },
+    { limit: Infinity, rate: 0.37 },
+  ],
+};
+
+function calcFederalTax(taxableIncome, year) {
+  const brackets = TAX_BRACKETS[year] || TAX_BRACKETS[2025];
+  let tax = 0, prev = 0;
+  for (const { limit, rate } of brackets) {
+    if (taxableIncome <= prev) break;
+    const taxable = Math.min(taxableIncome, limit) - prev;
+    tax += taxable * rate;
+    prev = limit;
+  }
+  return tax;
+}
+
 function renderDonutChart(canvasId, groups) {
   const labels = groups.map(g => g.name);
   const data = groups.map(g => g.total);
@@ -1309,14 +1567,21 @@ async function loadDashboard() {
   document.getElementById("txn-year").textContent = YEAR;
   document.getElementById("last-updated").textContent = new Date().toLocaleString();
 
-  let wrykoTotals, coachingTotals, taxLedger, transactions, accounts;
+  let wrykoTotals, coachingTotals, taxLedger, transactions, accounts, budgetData, debtData, savingsData, milestoneData, subscriptionData, billsData, reviewData;
   try {
-    [wrykoTotals, coachingTotals, taxLedger, transactions, accounts] = await Promise.all([
+    [wrykoTotals, coachingTotals, taxLedger, transactions, accounts, budgetData, debtData, savingsData, milestoneData, subscriptionData, billsData, reviewData] = await Promise.all([
       rpc("vault_schedule_c_wryko", { target_year: YEAR }),
       rpc("vault_schedule_c_coaching", { target_year: YEAR }),
       rpc("vault_ytd_tax_ledger", { target_year: YEAR }),
       query("pf_transactions", `tax_year=eq.${YEAR}&order=date.desc`),
       query("pf_accounts", "order=type,name"),
+      rpc("vault_budget_status"),
+      rpc("vault_debt_status"),
+      rpc("vault_savings_progress"),
+      rpc("vault_milestone_status"),
+      rpc("vault_all_subscriptions"),
+      rpc("vault_bills_overview"),
+      rpc("vault_needs_review"),
     ]);
   } catch (err) {
     console.error("[VAULT] Data fetch failed:", err);
@@ -1339,8 +1604,9 @@ async function loadDashboard() {
   const seTax = netPL > 0 ? netPL * 0.153 : 0;
   const halfSE = seTax / 2;
   const agi = netPL - halfSE;
-  const taxableIncome = Math.max(0, agi - 15000);
-  const fedTax = taxableIncome * 0.10;
+  const stdDeduction = STANDARD_DEDUCTIONS[YEAR] || 15700;
+  const taxableIncome = Math.max(0, agi - stdDeduction);
+  const fedTax = calcFederalTax(taxableIncome, YEAR);
   const totalTax = seTax + fedTax;
 
   // Build per-entity stats for dynamic summary bar
@@ -1383,7 +1649,7 @@ async function loadDashboard() {
     <tr><td>Self-Employment Tax (15.3%)</td><td class="amount negative">${fmt(seTax)}</td></tr>
     <tr><td>Less: 1/2 SE Tax Deduction</td><td class="amount positive">${fmt(-halfSE)}</td></tr>
     <tr><td>Adjusted Gross Income (AGI)</td><td class="amount">${fmt(agi)}</td></tr>
-    <tr><td>Less: Standard Deduction (Single, ${YEAR})</td><td class="amount positive">-$15,000.00</td></tr>
+    <tr><td>Less: Standard Deduction (Single, ${YEAR})</td><td class="amount positive">-${fmt(stdDeduction)}</td></tr>
     <tr><td>Taxable Income</td><td class="amount">${fmt(taxableIncome)}</td></tr>
     <tr><td>Federal Income Tax (10% bracket)</td><td class="amount">${fmt(fedTax)}</td></tr>
     <tr class="total-row"><td>Total Estimated Tax Liability</td><td class="amount negative">${fmt(totalTax)}</td></tr>
@@ -1551,8 +1817,9 @@ async function loadDashboard() {
     const projNet = projIncome - projExpenses;
     const projSeTax = projNet > 0 ? projNet * 0.153 : 0;
     const projAgi = projNet - (projSeTax / 2);
-    const projTaxable = Math.max(0, projAgi - 15000);
-    const projFedTax = projTaxable * 0.10;
+    const projStdDed = STANDARD_DEDUCTIONS[YEAR] || 15700;
+    const projTaxable = Math.max(0, projAgi - projStdDed);
+    const projFedTax = calcFederalTax(projTaxable, YEAR);
     const projTotalTax = projSeTax + projFedTax;
 
     document.getElementById("projection-summary-title").textContent = `${rangeLabel} Projection`;
@@ -1594,6 +1861,199 @@ async function loadDashboard() {
   renderProjections("year");
   const projSelect = document.getElementById("projection-range");
   if (projSelect) projSelect.addEventListener("change", () => renderProjections(projSelect.value));
+
+  // ============ BUDGET TAB ============
+  const budgets = Array.isArray(budgetData) ? budgetData : [];
+  const budgetEl = document.getElementById("budget-table");
+  if (budgets.length) {
+    let totalLimit = 0, totalSpent = 0;
+    budgetEl.innerHTML = budgets.map(b => {
+      const pct = parseFloat(b.pct_used || 0);
+      const remaining = parseFloat(b.remaining || 0);
+      totalLimit += parseFloat(b.monthly_limit || 0);
+      totalSpent += parseFloat(b.current_spent || 0);
+      let barColor = "var(--emerald)";
+      if (pct >= 100) barColor = "var(--rose)";
+      else if (pct >= parseFloat(b.alert_at_pct || 80)) barColor = "var(--amber)";
+      return `<tr>
+        <td style="font-weight:600;text-transform:capitalize">${(b.category || "").replace(/_/g, " ")}</td>
+        <td class="amount">${fmt(b.monthly_limit)}</td>
+        <td class="amount">${fmt(b.current_spent)}</td>
+        <td class="amount ${remaining >= 0 ? 'positive' : 'negative'}">${fmt(remaining)}</td>
+        <td><div class="budget-progress-wrap">
+          <div class="budget-progress-bar"><div class="budget-progress-fill" style="width:${Math.min(pct, 100)}%;background:${barColor}"></div></div>
+          <span class="budget-progress-pct" style="color:${barColor}">${pct}%</span>
+        </div></td>
+      </tr>`;
+    }).join("") + `<tr class="total-row"><td>Total</td><td class="amount">${fmt(totalLimit)}</td><td class="amount">${fmt(totalSpent)}</td><td class="amount ${(totalLimit - totalSpent) >= 0 ? 'positive' : 'negative'}">${fmt(totalLimit - totalSpent)}</td><td></td></tr>`;
+  } else {
+    budgetEl.innerHTML = emptyRow(5, "No budget categories set. Seed your pf_budget table to start tracking.");
+  }
+
+  // ============ MILESTONES TAB ============
+  const milestones = Array.isArray(milestoneData) ? milestoneData : [];
+  const milestoneEl = document.getElementById("milestones-container");
+  if (milestones.length) {
+    milestoneEl.innerHTML = milestones.map(m => {
+      const pct = parseFloat(m.progress_pct || 0);
+      const statusClass = m.status === "completed" ? "milestone-completed" : m.status === "paused" ? "milestone-paused" : "milestone-active";
+      return `<div class="milestone-card">
+        <div class="milestone-header">
+          <div class="milestone-name">${m.name || ""}</div>
+          <span class="milestone-status ${statusClass}">${m.status || "active"}</span>
+        </div>
+        <div class="milestone-meta">
+          <span>Current: <strong>${fmt(m.current_amount)}</strong></span>
+          <span>Target: <strong>${fmt(m.target_amount)}</strong></span>
+          ${m.projected_completion ? `<span>Projected: <strong>${m.projected_completion}</strong></span>` : ""}
+          ${m.target_date ? `<span>Goal: <strong>${m.target_date}</strong></span>` : ""}
+        </div>
+        <div class="milestone-bar"><div class="milestone-fill" style="width:${Math.min(pct, 100)}%"></div></div>
+        <div style="text-align:right;font-size:12px;font-weight:700;color:var(--emerald-dark);margin-top:6px">${pct.toFixed(1)}%</div>
+      </div>`;
+    }).join("");
+  } else {
+    milestoneEl.innerHTML = `<div class="empty-state"><div class="empty-state-icon">&#x1F3AF;</div><div class="empty-state-title">No milestones yet</div><div class="empty-state-text">Milestones will appear once pf_milestones is seeded.</div></div>`;
+  }
+
+  // ============ DEBT TAB ============
+  const debts = Array.isArray(debtData) ? debtData : [];
+  const debtEl = document.getElementById("debt-table");
+  if (debts.length) {
+    let totalBalance = 0, totalMin = 0;
+    debtEl.innerHTML = debts.map(d => {
+      totalBalance += parseFloat(d.current_balance || 0);
+      totalMin += parseFloat(d.minimum_payment || 0);
+      return `<tr>
+        <td style="font-weight:600">${d.name || ""}</td>
+        <td class="amount negative">${fmt(d.current_balance)}</td>
+        <td><span class="rate">${parseFloat(d.interest_rate || 0).toFixed(1)}%</span></td>
+        <td class="amount">${fmt(d.minimum_payment)}</td>
+        <td class="amount positive">${fmt(d.monthly_extra || 0)}</td>
+        <td style="font-variant-numeric:tabular-nums">${d.target_payoff_date || "—"}</td>
+      </tr>`;
+    }).join("") + `<tr class="total-row"><td>Total Debt</td><td class="amount negative">${fmt(totalBalance)}</td><td></td><td class="amount">${fmt(totalMin)}</td><td></td><td></td></tr>`;
+  } else {
+    debtEl.innerHTML = emptyRow(6, "No debts tracked. You're either debt-free or need to seed pf_debt.");
+  }
+
+  // Savings
+  const savings = Array.isArray(savingsData) ? savingsData : [];
+  const savingsEl = document.getElementById("savings-table");
+  if (savings.length) {
+    savingsEl.innerHTML = savings.map(s => {
+      const pct = parseFloat(s.pct_complete || 0);
+      let barColor = "var(--emerald)";
+      if (pct >= 100) barColor = "#3b82f6";
+      return `<tr>
+        <td style="font-weight:600">${s.name || ""}</td>
+        <td class="amount">${fmt(s.current_amount)}</td>
+        <td class="amount">${fmt(s.target_amount)}</td>
+        <td class="amount">${fmt(s.monthly_contribution)}</td>
+        <td><div class="budget-progress-wrap">
+          <div class="budget-progress-bar"><div class="budget-progress-fill" style="width:${Math.min(pct, 100)}%;background:${barColor}"></div></div>
+          <span class="budget-progress-pct" style="color:${barColor}">${pct}%</span>
+        </div></td>
+      </tr>`;
+    }).join("");
+  } else {
+    savingsEl.innerHTML = emptyRow(5, "No savings goals set. Seed pf_savings_buckets to track progress.");
+  }
+
+  // ============ SUBSCRIPTIONS TAB ============
+  const subs = Array.isArray(subscriptionData) ? subscriptionData : [];
+  const subsEl = document.getElementById("subscriptions-table");
+  const activeSubs = subs.filter(s => s.active);
+  const totalMonthly = activeSubs.reduce((s, sub) => s + parseFloat(sub.monthly_cost || 0), 0);
+  document.getElementById("subs-summary").textContent = `${activeSubs.length} active — ${fmt(totalMonthly)}/mo`;
+
+  function priorityBadge(p) {
+    const cls = { critical: "priority-critical", high: "priority-high", medium: "priority-medium", low: "priority-low", zombie: "priority-zombie" };
+    return `<span class="priority-badge ${cls[p] || 'priority-low'}">${p || "—"}</span>`;
+  }
+
+  function renderSubs(list) {
+    if (!list.length) {
+      subsEl.innerHTML = emptyRow(8, "No subscriptions tracked yet.");
+      return;
+    }
+    subsEl.innerHTML = list.map(s => `<tr${!s.active ? ' style="opacity:0.5"' : ""}>
+      <td style="font-weight:600">${s.name || ""}</td>
+      <td>${s.vendor || ""}</td>
+      <td class="amount">${fmt(s.amount)}</td>
+      <td>${s.billing_cycle || ""}</td>
+      <td class="amount">${fmt(s.monthly_cost)}</td>
+      <td>${priorityBadge(s.priority)}</td>
+      <td style="font-variant-numeric:tabular-nums">${s.next_charge || "—"}</td>
+      <td>${s.active ? '<span class="status-pill status-paid"><span class="status-dot"></span>Active</span>' : '<span class="status-pill status-upcoming"><span class="status-dot"></span>Inactive</span>'}</td>
+    </tr>`).join("");
+  }
+  renderSubs(subs);
+
+  // Subscription filters
+  const subsFilterInput = document.getElementById("filter-subs");
+  const subsStatusSelect = document.getElementById("filter-subs-status");
+  function filterSubs() {
+    const q = (subsFilterInput?.value || "").toLowerCase();
+    const status = subsStatusSelect?.value || "";
+    const filtered = subs.filter(s => {
+      const textMatch = !q || [s.name, s.vendor, s.purpose, s.category].join(" ").toLowerCase().includes(q);
+      const statusMatch = !status || (status === "active" ? s.active : !s.active);
+      return textMatch && statusMatch;
+    });
+    renderSubs(filtered);
+  }
+  if (subsFilterInput) subsFilterInput.addEventListener("input", filterSubs);
+  if (subsStatusSelect) subsStatusSelect.addEventListener("change", filterSubs);
+
+  // ============ BILLS TAB ============
+  const bills = Array.isArray(billsData) ? billsData : [];
+  const billsEl = document.getElementById("bills-table");
+  if (bills.length) {
+    billsEl.innerHTML = bills.map(b => {
+      const statusCls = b.status === "paid" ? "status-paid" : b.status === "overdue" ? "status-overdue" : "status-upcoming";
+      return `<tr>
+        <td style="font-weight:600">${b.name || ""}</td>
+        <td>${b.vendor || ""}</td>
+        <td class="amount">${fmt(b.amount)}</td>
+        <td>${b.due_day || "—"}</td>
+        <td style="font-variant-numeric:tabular-nums">${b.next_due || "—"}</td>
+        <td>${b.auto_pay ? '<span class="status-pill status-paid"><span class="status-dot"></span>Auto</span>' : '<span class="status-pill status-upcoming"><span class="status-dot"></span>Manual</span>'}</td>
+        <td><span class="status-pill ${statusCls}"><span class="status-dot"></span>${b.status || "upcoming"}</span></td>
+      </tr>`;
+    }).join("");
+  } else {
+    billsEl.innerHTML = emptyRow(7, "No bills tracked. Seed pf_bills to see upcoming payments.");
+  }
+
+  // ============ NEEDS REVIEW TAB ============
+  const reviews = Array.isArray(reviewData) ? reviewData : [];
+  document.getElementById("review-count").textContent = reviews.length;
+  const reviewEl = document.getElementById("review-table");
+  const reviewEmpty = document.getElementById("review-empty");
+  const reviewWrapper = document.getElementById("review-table-wrapper");
+  if (reviews.length) {
+    reviewEmpty.style.display = "none";
+    reviewWrapper.style.display = "";
+    reviewEl.innerHTML = reviews.map(r => `<tr id="review-${r.id}">
+      <td style="white-space:nowrap;font-variant-numeric:tabular-nums">${r.date || ""}</td>
+      <td style="font-weight:500">${r.vendor || ""}</td>
+      <td>${r.description || ""}</td>
+      <td class="amount">${fmt(r.amount)}</td>
+      <td style="font-size:11px;color:var(--text-muted)">${r.tax_note || ""}</td>
+      <td style="white-space:nowrap">
+        <button class="review-btn review-btn-wryko" onclick="classifyTransaction('${r.id}','wryko')">Wryko</button>
+        <button class="review-btn review-btn-coaching" onclick="classifyTransaction('${r.id}','coaching')">Coaching</button>
+        <button class="review-btn review-btn-personal" onclick="classifyTransaction('${r.id}','personal')">Personal</button>
+      </td>
+    </tr>`).join("");
+  } else {
+    reviewEmpty.style.display = "";
+    reviewWrapper.style.display = "none";
+  }
+
+  // Monthly year label
+  document.getElementById("monthly-year").textContent = YEAR;
 
   // Store data for filters
   window._vaultTxns = { all: txns, wryko: wrykoTxns, coaching: coachingTxns, personal: personalTxns };
@@ -1740,6 +2200,45 @@ function initFilters() {
 
   // Apply default "This Week" filter on load
   filterAllTransactions();
+}
+
+async function classifyTransaction(id, entity) {
+  const entityMap = {
+    wryko: { schedule_c_entity: "wryko", tax_category: "wryko_expense", deductible_pct: 100 },
+    coaching: { schedule_c_entity: "coaching", tax_category: "coaching_expense", deductible_pct: 100 },
+    personal: { schedule_c_entity: "personal", tax_category: "personal", deductible_pct: 0 },
+  };
+  const updates = entityMap[entity];
+  if (!updates) return;
+
+  try {
+    // Get the transaction's amount first for deductible calculation
+    const txnResp = await fetch(`${SUPABASE_URL}/rest/v1/pf_transactions?id=eq.${id}&select=amount`, { headers });
+    const txnArr = await txnResp.json();
+    const txnAmount = txnArr?.[0]?.amount || 0;
+
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/pf_transactions?id=eq.${id}`, {
+      method: "PATCH",
+      headers: { ...headers, "Content-Type": "application/json", Prefer: "return=minimal" },
+      body: JSON.stringify({
+        ...updates,
+        reviewed: true,
+        deductible_amount: updates.deductible_pct === 100 ? txnAmount : 0,
+      }),
+    });
+    if (r.ok) {
+      const row = document.getElementById(`review-${id}`);
+      if (row) {
+        row.style.transition = "opacity 0.3s";
+        row.style.opacity = "0";
+        setTimeout(() => row.remove(), 300);
+        const count = document.getElementById("review-count");
+        count.textContent = Math.max(0, parseInt(count.textContent) - 1);
+      }
+    }
+  } catch (err) {
+    console.error("[VAULT] Classification failed:", err);
+  }
 }
 
 function exportPDF() {

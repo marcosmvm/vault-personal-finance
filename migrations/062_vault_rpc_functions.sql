@@ -80,11 +80,11 @@ language sql stable as $$
 $$;
 
 -- 9. YTD tax ledger
-create or replace function vault_ytd_tax_ledger()
+create or replace function vault_ytd_tax_ledger(target_year int default extract(year from now())::int)
 returns table(schedule_c_entity text, tax_category text, total numeric, deductible_total numeric, transaction_count bigint)
 language sql stable as $$
   select schedule_c_entity, tax_category, sum(amount), sum(deductible_amount), count(*)
-  from pf_transactions where tax_year = extract(year from now())::int
+  from pf_transactions where tax_year = target_year
   group by schedule_c_entity, tax_category order by schedule_c_entity, sum(amount) desc;
 $$;
 
@@ -162,4 +162,33 @@ language sql stable as $$
     coalesce(sum(case when tax_category = 'business_income_coaching' then amount else 0 end), 0) -
     coalesce(sum(case when schedule_c_entity = 'coaching' and type = 'expense' then deductible_amount else 0 end), 0)
   from pf_transactions where tax_year = target_year;
+$$;
+
+-- 17. Budget status (all categories, not just over threshold)
+create or replace function vault_budget_status()
+returns table(category text, monthly_limit numeric, current_spent numeric, pct_used numeric, remaining numeric, alert_at_pct numeric)
+language sql stable as $$
+  select category, monthly_limit, current_spent,
+    round((current_spent / nullif(monthly_limit, 0)) * 100, 1),
+    monthly_limit - current_spent,
+    alert_at_pct
+  from pf_budget
+  where period_start <= now()::date and period_end >= now()::date
+  order by (current_spent / nullif(monthly_limit, 0)) desc;
+$$;
+
+-- 18. All subscriptions (active + inactive)
+create or replace function vault_all_subscriptions()
+returns table(id uuid, name text, vendor text, amount numeric, billing_cycle text, monthly_cost numeric, priority text, next_charge date, purpose text, active boolean, cancel_url text, category text)
+language sql stable as $$
+  select id, name, vendor, amount, billing_cycle, monthly_cost, priority, next_charge, purpose, active, cancel_url, category
+  from pf_subscriptions order by active desc, monthly_cost desc;
+$$;
+
+-- 19. Bills overview
+create or replace function vault_bills_overview()
+returns table(id uuid, name text, vendor text, amount numeric, due_day int, next_due date, auto_pay boolean, status text, category text)
+language sql stable as $$
+  select id, name, vendor, amount, due_day, next_due, auto_pay, status, category
+  from pf_bills order by next_due asc;
 $$;

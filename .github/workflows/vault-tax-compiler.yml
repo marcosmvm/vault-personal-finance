@@ -27,3 +27,22 @@ jobs:
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
         run: python -m agents.tax_compiler
+
+      - name: Alert on failure
+        if: failure()
+        env:
+          GMAIL_ADDRESS: ${{ secrets.GMAIL_ADDRESS }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          ALERT_EMAIL: ${{ secrets.ALERT_EMAIL }}
+        run: |
+          python -c "
+          import smtplib, os
+          from email.mime.text import MIMEText
+          msg = MIMEText('The VAULT Tax Compiler agent failed. Check GitHub Actions for details:\nhttps://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}')
+          msg['Subject'] = 'VAULT ALERT: Tax Compiler Failed'
+          msg['From'] = os.environ['GMAIL_ADDRESS']
+          msg['To'] = os.environ['ALERT_EMAIL']
+          with smtplib.SMTP_SSL('smtp.gmail.com', 465) as s:
+              s.login(os.environ['GMAIL_ADDRESS'], os.environ['GMAIL_APP_PASSWORD'])
+              s.send_message(msg)
+          "
