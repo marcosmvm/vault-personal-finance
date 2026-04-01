@@ -390,6 +390,12 @@ def main(lookback_days: int = 1) -> None:
     # ------------------------------------------------------------------
     _run_budget_sync()
 
+    # ------------------------------------------------------------------
+    # 7. Trigger allocator if income was detected
+    # ------------------------------------------------------------------
+    if processed > 0:
+        _run_allocator()
+
 
 def _run_budget_sync() -> None:
     """Import and run the budget_sync agent."""
@@ -401,6 +407,19 @@ def _run_budget_sync() -> None:
         print("  [WARN] budget_sync agent not found. Skipping budget sync.")
     except Exception:
         print("  [ERROR] Budget sync failed:")
+        traceback.print_exc()
+
+
+def _run_allocator() -> None:
+    """Trigger Brian's allocator to handle any new income."""
+    print("\n[5/5] Triggering Brian allocator for income allocation...")
+    try:
+        from agents.allocator import allocate_income
+        allocate_income(trigger_type="income_detected")
+    except ImportError:
+        print("  [WARN] allocator agent not found. Skipping allocation.")
+    except Exception:
+        print("  [ERROR] Allocator failed:")
         traceback.print_exc()
 
 

@@ -57,9 +57,13 @@ def main():
     overdue = _safe_rpc("vault_overdue_bills")
     budget_pace = _safe_rpc("vault_daily_budget_pace")
     budget_alerts = _safe_rpc("vault_budget_alerts")
+    # Brian data
+    payment_schedule = _safe_rpc("vault_bill_payment_schedule", {"days_ahead": 7})
+    debt_avalanche = _safe_rpc("vault_debt_avalanche_order")
+    available = _safe_rpc("vault_available_for_allocation")
 
     # ── Build email body ────────────────────────────────────────────
-    body = f"VAULT MORNING BRIEFING\n"
+    body = f"BRIAN'S DAILY FINANCIAL BRIEFING\n"
     body += f"{day_name} — {month_day} — {week_label}\n\n"
 
     # ━━━ 1. TODAY'S SNAPSHOT ━━━
@@ -171,10 +175,47 @@ def main():
     else:
         body += "Budget data unavailable — sync your budget.\n"
 
-    body += "\n---\nVAULT — Your money, your milestones, your morning."
+    # ━━━ 5. UPCOMING PAYMENTS (Brian) ━━━
+    if payment_schedule:
+        body += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        body += "UPCOMING PAYMENTS (7 DAYS)\n\n"
+        for ps in payment_schedule[:7]:
+            rb = float(ps.get("running_balance", 0))
+            marker = " ⚡" if rb < 0 else ""
+            body += f"• {ps.get('due_date', '?')} — {ps.get('name', '?')} — {_fmt(ps.get('amount', 0))} — balance: {_fmt(rb)}{marker}\n"
+        body += "\n"
+
+    # ━━━ 6. DEBT ATTACK STATUS (Brian) ━━━
+    if debt_avalanche:
+        body += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        body += "DEBT ATTACK STATUS\n\n"
+        target = debt_avalanche[0]
+        total_debt = sum(float(d.get("current_balance", 0)) for d in debt_avalanche)
+        body += f"• Total debt — {_fmt(total_debt)}\n"
+        body += f"• Avalanche target — {target.get('name', '?')} at {target.get('interest_rate', 0)}% APR\n"
+        body += f"• Target balance — {_fmt(target.get('current_balance', 0))}\n"
+        months = target.get("months_to_payoff", 0)
+        if months and float(months) < 999:
+            body += f"• Months to payoff — {float(months):.0f}\n"
+        body += "\n"
+
+    # ━━━ 7. CASH POSITION (Brian) ━━━
+    if available:
+        avail_data = available[0] if isinstance(available, list) else available
+        surplus = float(avail_data.get("allocatable_surplus", 0))
+        body += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+        body += "CASH POSITION\n\n"
+        body += f"• Checking — {_fmt(avail_data.get('checking_balance', 0))}\n"
+        body += f"• 30-day obligations — {_fmt(avail_data.get('total_obligations', 0))}\n"
+        body += f"• Allocatable surplus — {_fmt(surplus)}\n"
+        if surplus < 0:
+            body += f"\n⚡ WARNING: Projected shortfall of {_fmt(abs(surplus))} in next 30 days\n"
+        body += "\n"
+
+    body += "\n---\nBrian — Your autonomous financial controller."
 
     # ── Send ────────────────────────────────────────────────────────
-    subject = f"VAULT Morning Briefing — {day_name}, {today.strftime('%b %d')}"
+    subject = f"BRIAN: Daily Briefing — {day_name}, {today.strftime('%b %d')}"
 
     try:
         send_email(subject, body)

@@ -10,9 +10,9 @@ from datetime import datetime, timedelta, date
 from agents.shared import get_supabase, call_claude, rpc, send_email
 
 
-SYSTEM_PROMPT = """You are VAULT, Marcos Matthews's personal finance AI. You write weekly reviews that are direct, honest, and milestone-focused. You don't sugarcoat — you flag problems and celebrate wins.
+SYSTEM_PROMPT = """You are Brian, Marcos Matthews's autonomous financial controller. You write weekly reviews that are direct, honest, and milestone-focused. You don't sugarcoat — you flag problems and celebrate wins.
 
-Marcos is a solo founder (Wryko SaaS), soccer coach, and CSUN student with tight margins (~$1,750/mo expenses, ~$2,500/mo income). Every dollar matters. Your job is to keep him locked in on his 4 financial milestones.
+Marcos is a solo founder (Wryko SaaS), soccer coach, and CSUN student with tight margins (~$1,750/mo expenses, ~$2,500/mo income). Every dollar matters. Your job is to keep him locked in on his 4 financial milestones and execute his debt payoff strategy.
 
 Tone: CFO writing to a founder. Signal, not noise. Win/loss framing.
 Format: Use ALL CAPS section headers. Use bullet points with ' — ' separators for data. Use ⚡ for urgent items. Keep it scannable."""
@@ -70,10 +70,23 @@ All income sources this week.
 Flag if any expected income (coaching, Wryko) looks missing.
 Project monthly total based on this week's pace.
 
-6. THIS WEEK'S PLAY
-ONE specific action. Exact dollar amount, exact account, exact reason.
-Example: "Transfer $50 from BofA Checking to Emergency Fund. This keeps you on pace for Milestone 1 by June 12."
-This must directly tie to the most important milestone right now.
+6. DEBT VELOCITY
+Rate of debt reduction this week vs target pace.
+Current avalanche target status.
+Cascade projection: when current target is paid off, show freed payment rolling to next debt.
+Data: {json.dumps(data.get('debt_avalanche', []), default=str)}
+Projections: {json.dumps(data.get('debt_projection', []), default=str)}
+
+7. FINANCIAL POSITION
+Net worth snapshot from balance sheet.
+Income trend from pattern analysis.
+Data: {json.dumps(data.get('balance_sheet', []), default=str)}
+Income pattern: {json.dumps(data.get('income_pattern', []), default=str)}
+
+8. BRIAN'S ORDERS
+2-3 specific payment instructions for this week. Exact dollar amounts, exact accounts, exact payees.
+These must directly tie to the most important obligations and milestones right now.
+Priority: bills due → debt extra payment → savings contribution.
 
 Write in plain text. Use ALL CAPS for headers. Use bullets with ' — ' separators."""
 
@@ -97,6 +110,11 @@ def main():
         'budget_alerts': _safe_rpc("vault_budget_alerts"),
         'milestones': _safe_rpc("vault_milestone_status"),
         'subscriptions': _safe_rpc("vault_active_subscriptions"),
+        # Brian data
+        'debt_avalanche': _safe_rpc("vault_debt_avalanche_order"),
+        'debt_projection': _safe_rpc("vault_debt_payoff_projection", {"extra_monthly": 0}),
+        'income_pattern': _safe_rpc("vault_income_pattern", {"months_back": 3}),
+        'balance_sheet': _safe_rpc("vault_balance_sheet"),
     }
 
     print("All data fetched.")
@@ -128,7 +146,7 @@ def main():
                    and str(m['projected_completion']) <= str(m['target_date']))
     total_ms = len(data['milestones'])
 
-    subject = (f"VAULT Week in Review — {week_start} "
+    subject = (f"BRIAN: Week in Review — {week_start} "
                f"| Net: ${net_display} "
                f"| Milestones: {on_track}/{total_ms} on track")
 
