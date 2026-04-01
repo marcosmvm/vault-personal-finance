@@ -1156,9 +1156,9 @@ function renderOverviewBarChart(w, c, personalIncome, personalExpenses) {
   const cNet = parseFloat(c.net_profit_loss || 0);
   const pNet = personalIncome - personalExpenses;
 
-  // Net bar colors based on positive/negative
-  const netBg = [wNet, cNet, pNet].map(v => v >= 0 ? "rgba(96,165,250,0.25)" : "rgba(251,113,133,0.25)");
-  const netBorder = [wNet, cNet, pNet].map(v => v >= 0 ? "#60a5fa" : "#fb7185");
+  // Net bar colors: blue = positive, purple = negative
+  const netBg = [wNet, cNet, pNet].map(v => v >= 0 ? "rgba(96,165,250,0.3)" : "rgba(168,85,247,0.3)");
+  const netBorder = [wNet, cNet, pNet].map(v => v >= 0 ? "#3b82f6" : "#a855f7");
 
   makeChart("chart-overview-bar", {
     type: "bar",
