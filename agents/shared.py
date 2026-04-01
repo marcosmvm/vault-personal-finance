@@ -46,17 +46,66 @@ def rpc(name: str, params: dict | None = None):
 TAX_DASHBOARD_URL = "https://marcosmvm.github.io/vault-personal-finance/"
 
 
+def _render_pipe_table(rows: list[list[str]]) -> str:
+    """Render pipe-delimited rows as a styled HTML table."""
+    if not rows:
+        return ""
+    header = rows[0]
+    data = rows[1:]
+    cols = len(header)
+
+    html = (
+        '<table width="100%" cellpadding="0" cellspacing="0" '
+        'style="margin:12px 0;border-collapse:collapse;border-radius:8px;overflow:hidden;'
+        'border:1px solid #e2e8f0">'
+    )
+    # Header row
+    html += '<tr>'
+    for i, cell in enumerate(header):
+        align = 'left' if i == 0 else 'right'
+        html += (
+            f'<td style="padding:10px 14px;font-size:11px;font-weight:700;'
+            f'text-transform:uppercase;letter-spacing:1px;color:#64748b;'
+            f'background:#f8fafc;border-bottom:2px solid #d4a574;'
+            f'text-align:{align}">{cell}</td>'
+        )
+    html += '</tr>'
+    # Data rows
+    for row_idx, row in enumerate(data):
+        bg = '#ffffff' if row_idx % 2 == 0 else '#fafaf8'
+        html += '<tr>'
+        for i, cell in enumerate(row + [''] * (cols - len(row))):
+            if i == 0:
+                html += (
+                    f'<td style="padding:9px 14px;font-size:13px;font-weight:600;'
+                    f'color:#1e293b;background:{bg};border-bottom:1px solid #f1f5f9;'
+                    f'text-align:left">{cell}</td>'
+                )
+            else:
+                html += (
+                    f'<td style="padding:9px 14px;font-size:13px;color:#334155;'
+                    f'font-variant-numeric:tabular-nums;background:{bg};'
+                    f'border-bottom:1px solid #f1f5f9;text-align:right">{cell}</td>'
+                )
+        html += '</tr>'
+    html += '</table>'
+    return html
+
+
 def _wrap_html(subject: str, body_text: str) -> str:
     """Wrap plain text body in a stunning fintech-style HTML email template."""
     lines = body_text.split("\n")
     html_lines = []
     in_bullet_list = False
+    pipe_table_rows = []  # accumulate pipe-delimited table lines
 
     for line in lines:
         stripped = line.strip()
 
         # Detect bullet items
         is_bullet = stripped.startswith(("• ", "- ", "* ")) and len(stripped) > 2
+        # Detect pipe-delimited table rows
+        is_pipe = stripped.startswith("|") and stripped.endswith("|") and stripped.count("|") >= 3
 
         # Close open list if switching away from bullets
         if in_bullet_list and not is_bullet:
@@ -64,7 +113,16 @@ def _wrap_html(subject: str, body_text: str) -> str:
             html_lines.append("</td></tr></table>")
             in_bullet_list = False
 
-        if not stripped:
+        # Flush pipe table when switching away
+        if pipe_table_rows and not is_pipe:
+            html_lines.append(_render_pipe_table(pipe_table_rows))
+            pipe_table_rows = []
+
+        if is_pipe:
+            cells = [c.strip() for c in stripped.strip("|").split("|")]
+            pipe_table_rows.append(cells)
+
+        elif not stripped:
             html_lines.append('<div style="height:12px"></div>')
 
         elif stripped.startswith("━") or stripped.startswith("---"):
@@ -145,6 +203,8 @@ def _wrap_html(subject: str, body_text: str) -> str:
     if in_bullet_list:
         html_lines.append("</table>")
         html_lines.append("</td></tr></table>")
+    if pipe_table_rows:
+        html_lines.append(_render_pipe_table(pipe_table_rows))
 
     body_html = "\n".join(html_lines)
 
