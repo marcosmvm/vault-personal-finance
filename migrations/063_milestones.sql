@@ -79,9 +79,6 @@ begin
       from pf_debt d where d.current_balance > 0;
     end if;
 
-    -- Update stored current_amount
-    update pf_milestones set current_amount = live_amount where pf_milestones.id = rec.id;
-
     -- Calculate projected completion
     if rec.milestone_type = 'savings' then
       -- Monthly pace from savings contributions
